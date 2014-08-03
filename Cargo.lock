@@ -1,0 +1,12 @@
+[root]
+name = "hello-world"
+version = "0.1.0"
+dependencies = [
+ "sdl2 0.0.1 (git+https://github.com/AngryLawyer/rust-sdl2.git#182791820a1ec646e64b5b5d5c94cd98e32deba2)",
+]
+
+[[package]]
+name = "sdl2"
+version = "0.0.1"
+source = "git+https://github.com/AngryLawyer/rust-sdl2.git#182791820a1ec646e64b5b5d5c94cd98e32deba2"
+
