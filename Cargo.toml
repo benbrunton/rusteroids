@@ -6,3 +6,9 @@ authors = [ "wycats@example.com" ]
 
 [dependencies.sdl2]
 git = "https://github.com/AngryLawyer/rust-sdl2.git"
+
+#[dependencies.ncollide3df32]
+#git = "https://github.com/sebcrozet/ncollide"
+
+#[dependencies.gl]
+#git = "https://github.com/bjz/gl-rs"
