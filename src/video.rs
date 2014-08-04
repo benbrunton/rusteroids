@@ -1,4 +1,8 @@
+extern crate time;
+
 use sdl2;
+use actor;
+
 
 pub fn main() {
     sdl2::init(sdl2::InitVideo);
@@ -29,7 +33,7 @@ pub fn main() {
 
         sdl2::video::OpenGL | sdl2::video::Borderless
      */
-    let window_flags = /*sdl2::video::Fullscreen | */ sdl2::video::OpenGL | sdl2::video::Borderless;
+    let window_flags = /*sdl2::video::Fullscreen | */ sdl2::video::OpenGL /*| sdl2::video::Borderless */;
 
     let window = match sdl2::video::Window::new(title, window_x_pos, window_y_pos, window_width, window_height, window_flags) {
         Ok(window) => window,
@@ -41,47 +45,75 @@ pub fn main() {
         Err(err) => fail!(format!("failed to create renderer: {}", err))
     };
 
-    let mut x = 50;
-    let mut y = 50;
+    let mut player = ::actor::Actor::new(50, 50);
+    let mut t = time::get_time();
+    let fr:i32 = 1000000000 / 60;  
 
-    draw_screen(&renderer, x, y);
-
-    'main : loop {
-        'event : loop {
-            match sdl2::event::poll_event() {
-                sdl2::event::QuitEvent(_) => break 'main,
-                sdl2::event::KeyDownEvent(_, _, key, _, _) => {
-                    match key { 
-                        sdl2::keycode::EscapeKey => break 'main,
-                        sdl2::keycode::LeftKey   => x -= 1,
-                        sdl2::keycode::RightKey  => x += 1,
-                        sdl2::keycode::UpKey     => y -= 1,
-                        sdl2::keycode::DownKey   => y += 1,
-                        _                        => ()
-                    }
-                },
-                sdl2::event::NoEvent => break 'event,
-                // MouseButtonDownEvent(event.timestamp as uint, window,
-                                     // event.which as uint,
-                                     // mouse::wrap_mouse(event.button),
-                                     // event.x as int, event.y as int)
-                sdl2::event::MouseButtonDownEvent(_, _, _, _, x, y) => println!("{}, {}", x, y),
-                _ => {},
-            }
-
+    loop {
+        
+        if !handle_events(&mut player){
+            break;
         }
+        
 
-        draw_screen(&renderer, x, y);
+        let t2 = time::get_time();
+        if t2.nsec - fr > t.nsec || t2.sec > t.sec {
+            t = t2;
+            draw(&renderer, &player);
+            update(&mut player);
+            //println!("{}", t);
+        }
     }
 
     sdl2::quit();
 }
 
-fn draw_screen(renderer: &sdl2::render::Renderer<sdl2::video::Window>, x:i32, y:i32){
+fn draw(renderer: &sdl2::render::Renderer<sdl2::video::Window>, player: &actor::Actor){
     let _ = renderer.set_draw_color(sdl2::pixels::RGB(100, 0, 0));
     let _ = renderer.clear();
     let _ = renderer.set_draw_color(sdl2::pixels::RGB(255, 255, 255));
-    let r = sdl2::rect::Rect::new(x, y, 100, 100);
+    let player_pos = player.get_pos();
+    let r = sdl2::rect::Rect::new(player_pos.x, player_pos.y, 100, 100);
     let _ = renderer.fill_rect(&r);
     renderer.present();
+}
+
+fn update(player: &mut actor::Actor){
+    player.update();
+}
+
+fn handle_events(player: &mut actor::Actor) -> bool{
+    loop {
+        match sdl2::event::poll_event() {
+            sdl2::event::QuitEvent(_) => return false,
+            sdl2::event::KeyDownEvent(_, _, key, _, _) => {
+                match key { 
+                    sdl2::keycode::EscapeKey => return false,
+                    // sdl2::keycode::LeftKey   => x -= 1,
+                    // sdl2::keycode::RightKey  => x += 1,
+                    sdl2::keycode::UpKey     => player.begin_increase_throttle(),
+                    sdl2::keycode::DownKey   => player.begin_decrease_throttle(),
+                    _                        => ()
+                }
+            },
+            sdl2::event::KeyUpEvent(_, _, key, _, _) => {
+                match key { 
+                    // sdl2::keycode::LeftKey   => x -= 1,
+                    // sdl2::keycode::RightKey  => x += 1,
+                    sdl2::keycode::UpKey     => player.stop_increase_throttle(),
+                    sdl2::keycode::DownKey   => player.stop_decrease_throttle(),
+                    _                        => ()
+                }
+            },
+            sdl2::event::NoEvent => break,
+            // MouseButtonDownEvent(event.timestamp as uint, window,
+                                 // event.which as uint,
+                                 // mouse::wrap_mouse(event.button),
+                                 // event.x as int, event.y as int)
+            sdl2::event::MouseButtonDownEvent(_, _, _, _, x, y) => println!("{}, {}", x, y),
+            _ => {},
+        };
+    }
+
+    true
 }
