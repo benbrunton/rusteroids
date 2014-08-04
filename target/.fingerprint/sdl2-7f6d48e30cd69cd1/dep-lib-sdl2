@@ -1,2 +1,0 @@
-/home/ben/rust_experiments/windows/target/deps/libsdl2-7f6d48e30cd69cd1.rlib: src/sdl2/lib.rs src/sdl2/generated/keycode.rs src/sdl2/generated/scancode.rs src/sdl2/clipboard.rs src/sdl2/cpuinfo.rs src/sdl2/macros.rs src/sdl2/event.rs src/sdl2/filesystem.rs src/sdl2/gesture.rs src/sdl2/touch.rs src/sdl2/joystick.rs src/sdl2/controller.rs src/sdl2/keyboard.rs src/sdl2/mouse.rs src/sdl2/rect.rs src/sdl2/surface.rs src/sdl2/pixels.rs src/sdl2/video.rs src/sdl2/timer.rs src/sdl2/render.rs src/sdl2/rwops.rs src/sdl2/sdl.rs src/sdl2/audio.rs src/sdl2/version.rs
-
