@@ -41,17 +41,23 @@ pub fn main() {
         Err(err) => fail!(format!("failed to create renderer: {}", err))
     };
 
-    let _ = renderer.set_draw_color(sdl2::pixels::RGB(255, 0, 0));
-    let _ = renderer.clear();
-    renderer.present();
+    let mut x = 50;
+    let mut y = 50;
+
+    draw_screen(&renderer, x, y);
 
     'main : loop {
         'event : loop {
             match sdl2::event::poll_event() {
                 sdl2::event::QuitEvent(_) => break 'main,
                 sdl2::event::KeyDownEvent(_, _, key, _, _) => {
-                    if key == sdl2::keycode::EscapeKey {
-                        break 'main
+                    match key { 
+                        sdl2::keycode::EscapeKey => break 'main,
+                        sdl2::keycode::LeftKey   => x -= 1,
+                        sdl2::keycode::RightKey  => x += 1,
+                        sdl2::keycode::UpKey     => y -= 1,
+                        sdl2::keycode::DownKey   => y += 1,
+                        _                        => ()
                     }
                 },
                 sdl2::event::NoEvent => break 'event,
@@ -64,7 +70,18 @@ pub fn main() {
             }
 
         }
+
+        draw_screen(&renderer, x, y);
     }
 
     sdl2::quit();
+}
+
+fn draw_screen(renderer: &sdl2::render::Renderer<sdl2::video::Window>, x:i32, y:i32){
+    let _ = renderer.set_draw_color(sdl2::pixels::RGB(100, 0, 0));
+    let _ = renderer.clear();
+    let _ = renderer.set_draw_color(sdl2::pixels::RGB(255, 255, 255));
+    let r = sdl2::rect::Rect::new(x, y, 100, 100);
+    let _ = renderer.fill_rect(&r);
+    renderer.present();
 }
