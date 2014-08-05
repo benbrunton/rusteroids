@@ -1,19 +1,21 @@
+static PI : f32 = 3.14159265359;
+
 pub struct ActorView{
-    pub x: i32,
-    pub y: i32,
+    pub x: f32,
+    pub y: f32,
     pub width: i32,
     pub height: i32,
-    pub rotation: i32
+    pub rotation: f32
 }
 
 pub struct Actor{
-    x: i32,
-    y: i32,
+    x: f32,
+    y: f32,
     width: i32,
     height: i32,
-    acc: i32,
-    max_acc: i32,
-    rotation: i32,
+    accX: f32,
+    accY: f32,
+    rotation: f32,
     is_accelerating: bool,
     is_decelerating: bool,
     is_rotating_right: bool,
@@ -23,8 +25,8 @@ pub struct Actor{
 impl Actor{
     pub fn new(x: i32, y: i32, w: i32, h: i32) -> Actor { 
         Actor{
-            x: x, y: y, width: w, height: h,
-            acc: 0, max_acc: 10, rotation: 0,
+            x: x as f32, y: y as f32, width: w, height: h,
+            rotation: 0.0, accX: 0.0, accY: 0.0,
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false
         } 
@@ -75,7 +77,10 @@ impl Actor{
             self.rotate(1);
         }
 
-        self.y += self.acc;
+        self.y += self.accY;
+        self.x += self.accX;
+
+        self.slow_down();
     }
 
     pub fn get_view(&self) -> ActorView {
@@ -84,25 +89,48 @@ impl Actor{
             y: self.y, 
             width: self.width, 
             height: self.height, 
-            rotation: self.rotation 
+            rotation: (self.rotation * PI) / 180.0
         }
     }
 
     fn accelerate(&mut self){
-        self.acc += 1;
-        if self.acc > self.max_acc {
-            self.acc = self.max_acc;
-        }
+        let acc = 1.1;
+
+        let (dirx, diry) = self.get_rotate_vec();
+        self.accX += acc * dirx;
+        self.accY += acc * diry;
         self.is_decelerating = false;
     }
     fn decelerate(&mut self){
-        self.acc -= 1;
-        if self.acc < - self.max_acc {
-            self.acc = -self.max_acc;
+        let acc = 0.8;
+
+        let (dirx, diry) = self.get_rotate_vec();
+
+        self.accX -= acc * dirx;
+        self.accY -= acc * diry;
+    }
+
+    fn slow_down(&mut self){
+
+        self.accX *= 0.992;
+        self.accY *= 0.992;
+
+        if self.accX < 0.005 && self.accX > -0.005 {
+            self.accX = 0.0;
+        }
+
+        if self.accY < 0.005 && self.accY > -0.005 {
+            self.accY = 0.0;
         }
     }
 
     fn rotate(&mut self, direction : i32){
-        self.rotation += direction;
+        self.rotation += (direction * 3) as f32;
     }
+
+    fn get_rotate_vec(&mut self) -> (f32, f32){
+        let r = (self.rotation * PI) / 180.0;
+        (r.sin(), r.cos())
+    }
+
 }

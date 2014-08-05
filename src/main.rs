@@ -3,12 +3,15 @@
 extern crate gl;
 extern crate glfw;
 extern crate native;
+extern crate time;
 
 use gl::types::*;
 use glfw::Context;
 use std::mem;
 use std::ptr;
 use std::str;
+
+mod actor;
 
 // Vertex data
 static VERTEX_DATA: [GLfloat, ..6] = [
@@ -23,8 +26,14 @@ static VS_SRC: &'static str =
    "#version 150\n\
     in vec2 position;\n\
     uniform float y_pos;\n\
+    uniform float x_pos;\n\
+    uniform float angle;\n\
     void main() {\n\
-       gl_Position = vec4(position[0], position[1] + y_pos, 0.0, 1.0);\n\
+        float x = position[0];\n\
+        float y = position[1];\n\
+        float xx = (x * cos(angle) + y * sin(angle)) + x_pos;\n\
+        float yy = (-x * sin(angle) + y * cos(angle)) + y_pos;\n\
+       gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
     }";
 
 
@@ -138,33 +147,50 @@ fn main() {
 
     }
 
-
-    let mut y_pos = 0.0;
+    let mut t = time::get_time();
+    let mut player = actor::Actor::new(0, 0, 10, 10);
+    let fr:i32 = 100000000 / 60;  
 
     while !window.should_close() {
         // Poll events
         glfw.poll_events();
 
-        unsafe{
-            let loc = "y_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-            gl::Uniform1f(loc, y_pos);
-        }
-
-        // Clear the screen to black
-        gl::ClearColor(0.2, 0.2, 0.4, 1.0);
-        gl::Clear(gl::COLOR_BUFFER_BIT);
-
-        // Draw a triangle from the 3 vertices
-        gl::DrawArrays(gl::TRIANGLES, 0, 3);
-
-        y_pos += 0.01;
-
-        // Swap buffers
-        window.swap_buffers();
-
         for event in glfw::flush_messages(&events) {
-            handle_window_event(&window, event);
+            handle_window_event(&window, event, &mut player);
         }
+
+        let t2 = time::get_time();
+        if t2.nsec - fr > t.nsec || t2.sec > t.sec {
+
+            t = t2;
+
+            player.update();
+
+            let p = player.get_view();
+
+            //println!("r: {}\nx: {}\ny: {}", p.rotation, p.x, p.y);
+
+            unsafe{
+                let loc = "y_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+                gl::Uniform1f(loc, p.y / 2000.0);
+
+                let loc = "x_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+                gl::Uniform1f(loc, p.x / 2000.0);
+
+                let loc = "angle".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+                gl::Uniform1f(loc, p.rotation);
+            }
+
+            // Clear the screen to black
+            gl::ClearColor(0.2, 0.2, 0.4, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+
+            // Draw a triangle from the 3 vertices
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+
+            window.swap_buffers();
+        }
+
     }
 
     // Cleanup
@@ -177,7 +203,7 @@ fn main() {
     }
 }
 
-fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent)) {
+fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), player : &mut actor::Actor) {
     match event {
         glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
@@ -198,12 +224,20 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
             println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::KeyEscape, glfw::Press) => window.set_should_close(true),
-                (glfw::KeyR, glfw::Press) => {
-                    // Resize should cause the window to "refresh"
-                    let (window_width, window_height) = window.get_size();
-                    window.set_size(window_width + 1, window_height);
-                    window.set_size(window_width, window_height);
-                }
+                (glfw::KeyUp, glfw::Press) => player.begin_increase_throttle(),
+                (glfw::KeyDown, glfw::Press) => player.begin_decrease_throttle(),
+                (glfw::KeyUp, glfw::Release) => player.stop_increase_throttle(),
+                (glfw::KeyDown, glfw::Release) => player.stop_decrease_throttle(),
+                (glfw::KeyRight, glfw::Press) => player.begin_rotate_right(),
+                (glfw::KeyLeft, glfw::Press) => player.begin_rotate_left(),
+                (glfw::KeyRight, glfw::Release) => player.stop_rotate_right(),
+                (glfw::KeyLeft, glfw::Release) => player.stop_rotate_left(),
+                // (glfw::KeyR, glfw::Press) => {
+                //     // Resize should cause the window to "refresh"
+                //     let (window_width, window_height) = window.get_size();
+                //     window.set_size(window_width + 1, window_height);
+                //     window.set_size(window_width, window_height);
+                // }
                 _ => {}
             }
         }
