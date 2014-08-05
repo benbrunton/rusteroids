@@ -18,13 +18,17 @@ static VERTEX_DATA: [GLfloat, ..6] = [
 ];
 
 // Shader sources
+// vertex shader
 static VS_SRC: &'static str =
    "#version 150\n\
     in vec2 position;\n\
+    uniform float y_pos;\n\
     void main() {\n\
-       gl_Position = vec4(position, 0.0, 1.0);\n\
+       gl_Position = vec4(position[0], position[1] + y_pos, 0.0, 1.0);\n\
     }";
 
+
+// fragment shader
 static FS_SRC: &'static str =
    "#version 150\n\
     out vec4 out_color;\n\
@@ -116,7 +120,7 @@ fn main() {
         gl::BufferData(gl::ARRAY_BUFFER,
                        (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
                        mem::transmute(&VERTEX_DATA[0]),
-                       gl::STATIC_DRAW);
+                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
         // Use shader program
         gl::UseProgram(program);
@@ -125,13 +129,26 @@ fn main() {
         // Specify the layout of the vertex data
         let pos_attr = "position".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
         gl::EnableVertexAttribArray(pos_attr as GLuint);
-        gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT,
-                                gl::FALSE as GLboolean, 0, ptr::null());
+        gl::VertexAttribPointer(pos_attr as GLuint,     // must match the layout in the shader.
+                                2,                      // size
+                                gl::FLOAT,              // type
+                                gl::FALSE as GLboolean, // normalized?
+                                0,                      // stride
+                                ptr::null());           // array buffer offset
+
     }
+
+
+    let mut y_pos = 0.0;
 
     while !window.should_close() {
         // Poll events
         glfw.poll_events();
+
+        unsafe{
+            let loc = "y_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+            gl::Uniform1f(loc, y_pos);
+        }
 
         // Clear the screen to black
         gl::ClearColor(0.2, 0.2, 0.4, 1.0);
@@ -139,6 +156,8 @@ fn main() {
 
         // Draw a triangle from the 3 vertices
         gl::DrawArrays(gl::TRIANGLES, 0, 3);
+
+        y_pos += 0.01;
 
         // Swap buffers
         window.swap_buffers();
