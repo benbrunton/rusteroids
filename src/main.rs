@@ -13,27 +13,22 @@ use std::str;
 
 mod actor;
 
-// Vertex data
-static VERTEX_DATA: [GLfloat, ..6] = [
-     0.0,  0.05,
-     0.025, -0.05,
-    -0.025, -0.05
-];
+
 
 // Shader sources
 // vertex shader
 static VS_SRC: &'static str =
    "#version 150\n\
-    in vec2 position;\n\
-    uniform float y_pos;\n\
-    uniform float x_pos;\n\
+    in vec4 position;\n\
     uniform float angle;\n\
     void main() {\n\
         float x = position[0];\n\
         float y = position[1];\n\
+        float x_pos = position[2];\n\
+        float y_pos = position[3];\n\
         float xx = (x * cos(angle) + y * sin(angle)) + x_pos;\n\
         float yy = (-x * sin(angle) + y * cos(angle)) + y_pos;\n\
-       gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
+        gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
     }";
 
 
@@ -118,6 +113,8 @@ fn main() {
     let mut vao = 0;
     let mut vbo = 0;
 
+    //let mut vbo_2 = 0;
+
     unsafe {
         // Create Vertex Array Object
         gl::GenVertexArrays(1, &mut vao);
@@ -126,10 +123,6 @@ fn main() {
         // Create a Vertex Buffer Object and copy the vertex data to it
         gl::GenBuffers(1, &mut vbo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       mem::transmute(&VERTEX_DATA[0]),
-                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
         // Use shader program
         gl::UseProgram(program);
@@ -139,11 +132,13 @@ fn main() {
         let pos_attr = "position".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
         gl::EnableVertexAttribArray(pos_attr as GLuint);
         gl::VertexAttribPointer(pos_attr as GLuint,     // must match the layout in the shader.
-                                2,                      // size
+                                4,                      // size
                                 gl::FLOAT,              // type
                                 gl::FALSE as GLboolean, // normalized?
                                 0,                      // stride
                                 ptr::null());           // array buffer offset
+
+        
 
     }
 
@@ -161,29 +156,61 @@ fn main() {
 
         let t2 = time::get_time();
         if t2.nsec - fr > t.nsec || t2.sec > t.sec {
-
             t = t2;
-
             player.update();
+
+
+            // Clear the screen to black
+            gl::ClearColor(0.2, 0.2, 0.4, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
 
             let p = player.get_view();
 
-            //println!("r: {}\nx: {}\ny: {}", p.rotation, p.x, p.y);
+            let v: Vec<GLfloat> = vec!(
+                0.0,  0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
+                0.025, -0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
+                -0.025, -0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
+            );
 
             unsafe{
-                let loc = "y_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-                gl::Uniform1f(loc, p.y / 2000.0);
 
-                let loc = "x_pos".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-                gl::Uniform1f(loc, p.x / 2000.0);
+                gl::BufferData(gl::ARRAY_BUFFER,
+                       ((v.len() + 1) * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                       mem::transmute(&v[0]),
+                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
                 let loc = "angle".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
                 gl::Uniform1f(loc, p.rotation);
             }
 
-            // Clear the screen to black
-            gl::ClearColor(0.2, 0.2, 0.4, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            
+
+            // Draw a triangle from the 3 vertices
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+
+
+            let v: Vec<GLfloat> = vec!(
+                
+
+                0.2,  -0.05, 0.5, 0.5, //0.0, 
+                0.225, 0.0, 0.5, 0.5, //0.0,
+                0.175, 0.0, 0.5, 0.5//, 0.0
+            );
+
+            unsafe{
+
+                gl::BufferData(gl::ARRAY_BUFFER,
+                       ((v.len() + 1) * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                       mem::transmute(&v[0]),
+                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
+
+                let loc = "angle".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+                gl::Uniform1f(loc, 0.0);
+
+                
+            }
+
+            
 
             // Draw a triangle from the 3 vertices
             gl::DrawArrays(gl::TRIANGLES, 0, 3);
@@ -205,8 +232,8 @@ fn main() {
 
 fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), player : &mut actor::Actor) {
     match event {
-        glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
-        glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
+        // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
+        // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
         glfw::CloseEvent                    => println!("Time: {}, Window close requested.", time),
         glfw::RefreshEvent                  => println!("Time: {}, Window refresh callback triggered.", time),
         glfw::FocusEvent(true)              => println!("Time: {}, Window focus gained.", time),
@@ -214,14 +241,14 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
         glfw::IconifyEvent(true)            => println!("Time: {}, Window was minimised", time),
         glfw::IconifyEvent(false)           => println!("Time: {}, Window was maximised.", time),
         glfw::FramebufferSizeEvent(w, h)    => println!("Time: {}, Framebuffer size: ({}, {})", time, w, h),
-        glfw::CharEvent(character)          => println!("Time: {}, Character: {}", time, character),
+        // glfw::CharEvent(character)          => println!("Time: {}, Character: {}", time, character),
         glfw::MouseButtonEvent(btn, action, mods) => println!("Time: {}, Button: {}, Action: {}, Modifiers: [{}]", time, glfw::ShowAliases(btn), action, mods),
-        glfw::CursorPosEvent(xpos, ypos)    => window.set_title(format!("Time: {}, Cursor position: ({}, {})", time, xpos, ypos).as_slice()),
+        // glfw::CursorPosEvent(xpos, ypos)    => window.set_title(format!("Time: {}, Cursor position: ({}, {})", time, xpos, ypos).as_slice()),
         glfw::CursorEnterEvent(true)        => println!("Time: {}, Cursor entered window.", time),
         glfw::CursorEnterEvent(false)       => println!("Time: {}, Cursor left window.", time),
-        glfw::ScrollEvent(x, y)             => window.set_title(format!("Time: {}, Scroll offset: ({}, {})", time, x, y).as_slice()),
-        glfw::KeyEvent(key, scancode, action, mods) => {
-            println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
+        // glfw::ScrollEvent(x, y)             => window.set_title(format!("Time: {}, Scroll offset: ({}, {})", time, x, y).as_slice()),
+        glfw::KeyEvent(key, /* scancode */ _, action, /* mods */ _ ) => {
+            // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::KeyEscape, glfw::Press) => window.set_should_close(true),
                 (glfw::KeyUp, glfw::Press) => player.begin_increase_throttle(),
@@ -240,6 +267,8 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
                 // }
                 _ => {}
             }
-        }
+        },
+
+        _ => ()
     }
 }
