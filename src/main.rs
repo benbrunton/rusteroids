@@ -13,19 +13,18 @@ use std::str;
 
 mod actor;
 
-
-
 // Shader sources
 // vertex shader
 static VS_SRC: &'static str =
    "#version 150\n\
-    in vec4 position;\n\
-    uniform float angle;\n\
+    in vec4 shape;\n\
+    uniform vec3 position;\n\
     void main() {\n\
-        float x = position[0];\n\
-        float y = position[1];\n\
-        float x_pos = position[2];\n\
-        float y_pos = position[3];\n\
+        float x = shape[0];\n\
+        float y = shape[1];\n\
+        float x_pos = position[0];\n\
+        float y_pos = position[1];\n\
+        float angle = position[2];\n\
         float xx = (x * cos(angle) + y * sin(angle)) + x_pos;\n\
         float yy = (-x * sin(angle) + y * cos(angle)) + y_pos;\n\
         gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
@@ -112,8 +111,7 @@ fn main() {
 
     let mut vao = 0;
     let mut vbo = 0;
-
-    //let mut vbo_2 = 0;
+    let mut loc;
 
     unsafe {
         // Create Vertex Array Object
@@ -129,22 +127,36 @@ fn main() {
         "out_color".with_c_str(|ptr| gl::BindFragDataLocation(program, 0, ptr));
 
         // Specify the layout of the vertex data
-        let pos_attr = "position".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
+        let pos_attr = "shape".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
         gl::EnableVertexAttribArray(pos_attr as GLuint);
         gl::VertexAttribPointer(pos_attr as GLuint,     // must match the layout in the shader.
-                                4,                      // size
+                                2,                      // size
                                 gl::FLOAT,              // type
                                 gl::FALSE as GLboolean, // normalized?
                                 0,                      // stride
                                 ptr::null());           // array buffer offset
 
-        
+        loc = "position".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
 
     }
 
     let mut t = time::get_time();
-    let mut player = actor::Actor::new(0, 0, 10, 10);
-    let fr:i32 = 100000000 / 60;  
+    let fr:i32 = 100000000 / 60;
+
+    let v: Vec<GLfloat> = vec!(
+        0.0,  0.05,
+        0.025, -0.05,
+        -0.025, -0.05,
+    );
+    let mut player = actor::Actor::new(0, 0, 10, 10, v);
+
+    let v: Vec<GLfloat> = vec!(
+        0.0,  0.05,
+        0.025, -0.05,
+        -0.025, -0.05,
+    );
+    let mut enemy = actor::Actor::new(100, 100, 2, 2, v);
+
 
     while !window.should_close() {
         // Poll events
@@ -158,64 +170,10 @@ fn main() {
         if t2.nsec - fr > t.nsec || t2.sec > t.sec {
             t = t2;
             player.update();
+            enemy.update();
 
 
-            // Clear the screen to black
-            gl::ClearColor(0.2, 0.2, 0.4, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
-
-            let p = player.get_view();
-
-            let v: Vec<GLfloat> = vec!(
-                0.0,  0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
-                0.025, -0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
-                -0.025, -0.05, p.x / 2000.0, p.y / 2000.0, //p.rotation,
-            );
-
-            unsafe{
-
-                gl::BufferData(gl::ARRAY_BUFFER,
-                       ((v.len() + 1) * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       mem::transmute(&v[0]),
-                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
-
-                let loc = "angle".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-                gl::Uniform1f(loc, p.rotation);
-            }
-
-            
-
-            // Draw a triangle from the 3 vertices
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
-
-
-            let v: Vec<GLfloat> = vec!(
-                
-
-                0.2,  -0.05, 0.5, 0.5, //0.0, 
-                0.225, 0.0, 0.5, 0.5, //0.0,
-                0.175, 0.0, 0.5, 0.5//, 0.0
-            );
-
-            unsafe{
-
-                gl::BufferData(gl::ARRAY_BUFFER,
-                       ((v.len() + 1) * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       mem::transmute(&v[0]),
-                       gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
-
-                let loc = "angle".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-                gl::Uniform1f(loc, 0.0);
-
-                
-            }
-
-            
-
-            // Draw a triangle from the 3 vertices
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
-
-            window.swap_buffers();
+            draw_scene(vec!(&player, &enemy), loc, &window);
         }
 
     }
@@ -271,4 +229,34 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
 
         _ => ()
     }
+}
+
+fn draw_scene(actors:Vec<&actor::Actor>, loc:i32, window: &glfw::Window){
+    // Clear the screen to black
+    gl::ClearColor(0.2, 0.2, 0.4, 1.0);
+    gl::Clear(gl::COLOR_BUFFER_BIT);
+
+    for &actor in actors.iter() {
+        let v = actor.get_view();
+        let s = actor.get_shape();
+        draw_actor(v, &s, loc);
+    }
+
+    window.swap_buffers();
+}
+
+fn draw_actor(p: actor::ActorView, v:&Vec<f32>, loc:i32){
+    
+    unsafe{
+
+        gl::BufferData(gl::ARRAY_BUFFER,
+               (v.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+               mem::transmute(&v[0]),
+               gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
+
+        gl::Uniform3f(loc, p.x / 2000.0, p.y / 2000.0, p.rotation);
+    }
+
+    // Draw a triangle from the 3 vertices
+    gl::DrawArrays(gl::TRIANGLES, 0, 3);
 }

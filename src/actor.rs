@@ -19,16 +19,18 @@ pub struct Actor{
     is_accelerating: bool,
     is_decelerating: bool,
     is_rotating_right: bool,
-    is_rotating_left: bool
+    is_rotating_left: bool,
+    shape: Vec<f32>
 }
 
 impl Actor{
-    pub fn new(x: i32, y: i32, w: i32, h: i32) -> Actor { 
+    pub fn new(x: i32, y: i32, w: i32, h: i32, shape:Vec<f32>) -> Actor { 
         Actor{
             x: x as f32, y: y as f32, width: w, height: h,
             rotation: 0.0, accX: 0.0, accY: 0.0,
             is_accelerating: false, is_decelerating: false,
-            is_rotating_right: false, is_rotating_left: false
+            is_rotating_right: false, is_rotating_left: false,
+            shape: shape
         } 
     }
     pub fn begin_increase_throttle(&mut self){
@@ -91,6 +93,10 @@ impl Actor{
             height: self.height, 
             rotation: (self.rotation * PI) / 180.0
         }
+    }
+
+    pub fn get_shape(&self) -> Vec<f32>{
+        self.shape.clone()
     }
 
     fn accelerate(&mut self){
