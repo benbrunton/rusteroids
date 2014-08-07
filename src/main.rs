@@ -152,7 +152,7 @@ fn main() {
         0.025, -0.05,
         -0.025, -0.05,
     );
-    let p = actor::Actor::new(0, 0, 0, 10, 10, 0.0, v, 1.1);
+    let p = actor::Actor::new(0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
     actors.add(p);
 
     let v: Vec<GLfloat> = vec!(
@@ -161,7 +161,7 @@ fn main() {
         -0.025, -0.05,
     );
 
-    let e = new_actor(100, 100, 2, 2, 0.0, v, 1.1);
+    let e = new_actor(0, 100, 100, 2, 2, 0.0, v, 1.1);
     actors.add(e);
     
     
@@ -175,6 +175,13 @@ fn main() {
 
         for event in glfw::flush_messages(&events) {
             handle_window_event(&window, event, &mut messages);
+        }
+
+        let acs = actors.get();
+        for &actor in acs.iter(){
+            if actor.t == 1 {
+                messages.push((actor.id, "begin_increase_throttle"));
+            }
         }
 
 
@@ -213,9 +220,9 @@ fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manag
 
 }
 
-fn new_actor(x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
+fn new_actor(t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
     let id = actor::Actor::get_count();
-    actor::Actor::new(id, x, y, w, h, r, v, acc)
+    actor::Actor::new(id, t, x, y, w, h, r, v, acc)
 }
 
 fn new_bullet(x: i32, y:i32, r:f32) -> actor::Actor{
@@ -224,7 +231,7 @@ fn new_bullet(x: i32, y:i32, r:f32) -> actor::Actor{
         0.005, -0.005,
         -0.005, -0.005,
     );
-    new_actor(x, y, 2, 2, r, v, 1.8)
+    new_actor(1, x, y, 2, 2, r, v, 1.8)
 }
 
 fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {

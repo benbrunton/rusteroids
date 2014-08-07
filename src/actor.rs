@@ -14,6 +14,7 @@ pub struct ActorView{
 #[deriving(Clone, Show)]
 pub struct Actor{
     pub id: i32,
+    pub t: i32,
     x: f32,
     y: f32,
     width: i32,
@@ -30,13 +31,13 @@ pub struct Actor{
 }
 
 impl Actor{
-    pub fn new(id: i32, x: i32, y: i32, w: i32, h: i32, rotation: f32, shape:Vec<f32>, acc:f32) -> Actor { 
+    pub fn new(id: i32, t:i32, x: i32, y: i32, w: i32, h: i32, rotation: f32, shape:Vec<f32>, acc:f32) -> Actor { 
         unsafe{
             count += 1;
         }
 
         Actor{
-            id: id, x: x as f32, y: y as f32, width: w, height: h,
+            id: id, t: t, x: x as f32, y: y as f32, width: w, height: h,
             rotation: rotation, accX: 0.0, accY: 0.0,
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false,
