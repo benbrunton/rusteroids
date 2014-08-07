@@ -1,5 +1,8 @@
 static PI : f32 = 3.14159265359;
 
+static mut count: i32 = 0;
+
+#[deriving(Clone, Show)]
 pub struct ActorView{
     pub x: f32,
     pub y: f32,
@@ -8,7 +11,9 @@ pub struct ActorView{
     pub rotation: f32
 }
 
+#[deriving(Clone, Show)]
 pub struct Actor{
+    pub id: i32,
     x: f32,
     y: f32,
     width: i32,
@@ -20,46 +25,24 @@ pub struct Actor{
     is_decelerating: bool,
     is_rotating_right: bool,
     is_rotating_left: bool,
-    shape: Vec<f32>
+    shape: Vec<f32>,
+    acc: f32
 }
 
 impl Actor{
-    pub fn new(x: i32, y: i32, w: i32, h: i32, shape:Vec<f32>) -> Actor { 
+    pub fn new(id: i32, x: i32, y: i32, w: i32, h: i32, rotation: f32, shape:Vec<f32>, acc:f32) -> Actor { 
+        unsafe{
+            count += 1;
+        }
+
         Actor{
-            x: x as f32, y: y as f32, width: w, height: h,
-            rotation: 0.0, accX: 0.0, accY: 0.0,
+            id: id, x: x as f32, y: y as f32, width: w, height: h,
+            rotation: rotation, accX: 0.0, accY: 0.0,
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false,
-            shape: shape
-        } 
-    }
-    pub fn begin_increase_throttle(&mut self){
-        self.is_accelerating = true;
-    }
-    pub fn stop_increase_throttle(&mut self){
-        self.is_accelerating = false;
-    }
-
-    pub fn begin_decrease_throttle(&mut self){
-        self.is_decelerating = true;
-    }
-    pub fn stop_decrease_throttle(&mut self){
-        self.is_decelerating = false;
-    }
-
-    pub fn begin_rotate_right(&mut self){
-        self.is_rotating_right = true;
-    }
-
-    pub fn stop_rotate_right(&mut self){
-        self.is_rotating_right = false;
-    }
-
-    pub fn begin_rotate_left(&mut self){
-        self.is_rotating_left = true;
-    }
-    pub fn stop_rotate_left(&mut self){
-        self.is_rotating_left = false;
+            shape: shape,
+            acc: acc
+        }
     }
     
     pub fn update(&mut self){
@@ -95,12 +78,64 @@ impl Actor{
         }
     }
 
-    pub fn get_shape(&self) -> Vec<f32>{
-        self.shape.clone()
+    pub fn get_shape(&self) -> &Vec<f32>{
+        &self.shape
+    }
+
+    pub fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+        match message {
+            "begin_increase_throttle"   => self.begin_increase_throttle(),
+            "begin_decrease_throttle"   => self.begin_decrease_throttle(),
+            "stop_increase_throttle"    => self.stop_increase_throttle(),
+            "stop_decrease_throttle"    => self.stop_decrease_throttle(),
+            "begin_rotate_right"        => self.begin_rotate_right(),
+            "begin_rotate_left"         => self.begin_rotate_left(),
+            "stop_rotate_right"         => self.stop_rotate_right(),
+            "stop_rotate_left"          => self.stop_rotate_left(),
+            "fire"                      => {
+                                            output_messages.push(("fire", self.get_view().clone()));
+                                        },
+            _                           => ()
+        };
+    }
+
+    pub fn get_count() -> i32{
+        unsafe {
+            count
+        }
+    }
+
+    fn begin_increase_throttle(&mut self){
+        self.is_accelerating = true;
+    }
+    fn stop_increase_throttle(&mut self){
+        self.is_accelerating = false;
+    }
+
+    fn begin_decrease_throttle(&mut self){
+        self.is_decelerating = true;
+    }
+    fn stop_decrease_throttle(&mut self){
+        self.is_decelerating = false;
+    }
+
+    fn begin_rotate_right(&mut self){
+        self.is_rotating_right = true;
+    }
+
+    fn stop_rotate_right(&mut self){
+        self.is_rotating_right = false;
+    }
+
+    fn begin_rotate_left(&mut self){
+        self.is_rotating_left = true;
+    }
+    fn stop_rotate_left(&mut self){
+        self.is_rotating_left = false;
     }
 
     fn accelerate(&mut self){
-        let acc = 1.1;
+        let acc = self.acc;
 
         let (dirx, diry) = self.get_rotate_vec();
         self.accX += acc * dirx;

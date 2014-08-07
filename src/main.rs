@@ -12,6 +12,7 @@ use std::ptr;
 use std::str;
 
 mod actor;
+mod actor_manager;
 
 // Shader sources
 // vertex shader
@@ -143,37 +144,50 @@ fn main() {
     let mut t = time::get_time();
     let fr:i32 = 100000000 / 60;
 
-    let v: Vec<GLfloat> = vec!(
-        0.0,  0.05,
-        0.025, -0.05,
-        -0.025, -0.05,
-    );
-    let mut player = actor::Actor::new(0, 0, 10, 10, v);
+
+    let mut actors = actor_manager::ActorManager::new();
 
     let v: Vec<GLfloat> = vec!(
         0.0,  0.05,
         0.025, -0.05,
         -0.025, -0.05,
     );
-    let mut enemy = actor::Actor::new(100, 100, 2, 2, v);
+    let p = actor::Actor::new(0, 0, 0, 10, 10, 0.0, v, 1.1);
+    actors.add(p);
 
+    let v: Vec<GLfloat> = vec!(
+        0.0,  0.05,
+        0.025, -0.05,
+        -0.025, -0.05,
+    );
 
+    let e = new_actor(100, 100, 2, 2, 0.0, v, 1.1);
+    actors.add(e);
+    
+    
     while !window.should_close() {
+
+
         // Poll events
         glfw.poll_events();
 
+        let mut messages = vec!();
+
         for event in glfw::flush_messages(&events) {
-            handle_window_event(&window, event, &mut player);
+            handle_window_event(&window, event, &mut messages);
         }
+
 
         let t2 = time::get_time();
         if t2.nsec - fr > t.nsec || t2.sec > t.sec {
             t = t2;
-            player.update();
-            enemy.update();
 
+            let mut output_messages = vec!();
 
-            draw_scene(vec!(&player, &enemy), loc, &window);
+            actors.update(messages, &mut output_messages);
+            draw_scene(&actors, loc, &window);
+            process_messages(&mut output_messages, &mut actors);
+
         }
 
     }
@@ -188,7 +202,32 @@ fn main() {
     }
 }
 
-fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), player : &mut actor::Actor) {
+fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manager: &mut actor_manager::ActorManager){
+
+    for &(msg, v) in output_messages.iter(){
+        match msg{
+            "fire"  => actor_manager.add(new_bullet(v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
+            _       => ()
+        }
+    }
+
+}
+
+fn new_actor(x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
+    let id = actor::Actor::get_count();
+    actor::Actor::new(id, x, y, w, h, r, v, acc)
+}
+
+fn new_bullet(x: i32, y:i32, r:f32) -> actor::Actor{
+    let v: Vec<GLfloat> = vec!(
+        0.0,  0.005,
+        0.005, -0.005,
+        -0.005, -0.005,
+    );
+    new_actor(x, y, 2, 2, r, v, 1.8)
+}
+
+fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
@@ -209,14 +248,15 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::KeyEscape, glfw::Press) => window.set_should_close(true),
-                (glfw::KeyUp, glfw::Press) => player.begin_increase_throttle(),
-                (glfw::KeyDown, glfw::Press) => player.begin_decrease_throttle(),
-                (glfw::KeyUp, glfw::Release) => player.stop_increase_throttle(),
-                (glfw::KeyDown, glfw::Release) => player.stop_decrease_throttle(),
-                (glfw::KeyRight, glfw::Press) => player.begin_rotate_right(),
-                (glfw::KeyLeft, glfw::Press) => player.begin_rotate_left(),
-                (glfw::KeyRight, glfw::Release) => player.stop_rotate_right(),
-                (glfw::KeyLeft, glfw::Release) => player.stop_rotate_left(),
+                (glfw::KeyUp, glfw::Press) => messages.push((0, "begin_increase_throttle")),
+                (glfw::KeyDown, glfw::Press) => messages.push((0, "begin_decrease_throttle")),
+                (glfw::KeyUp, glfw::Release) => messages.push((0, "stop_increase_throttle")),
+                (glfw::KeyDown, glfw::Release) => messages.push((0, "stop_decrease_throttle")),
+                (glfw::KeyRight, glfw::Press) => messages.push((0, "begin_rotate_right")),
+                (glfw::KeyLeft, glfw::Press) => messages.push((0, "begin_rotate_left")),
+                (glfw::KeyRight, glfw::Release) => messages.push((0, "stop_rotate_right")),
+                (glfw::KeyLeft, glfw::Release) => messages.push((0, "stop_rotate_left")),
+                (glfw::KeySpace, glfw::Release) => messages.push((0, "fire")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();
@@ -231,21 +271,24 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
     }
 }
 
-fn draw_scene(actors:Vec<&actor::Actor>, loc:i32, window: &glfw::Window){
+fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, window: &glfw::Window){
+
+    let actors = actor_manager.get();
+
     // Clear the screen to black
     gl::ClearColor(0.2, 0.2, 0.4, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
     for &actor in actors.iter() {
-        let v = actor.get_view();
+        let v = &actor.get_view();
         let s = actor.get_shape();
-        draw_actor(v, &s, loc);
+        draw_actor(v, s, loc);
     }
 
     window.swap_buffers();
 }
 
-fn draw_actor(p: actor::ActorView, v:&Vec<f32>, loc:i32){
+fn draw_actor(p: &actor::ActorView, v:&Vec<f32>, loc:i32){
     
     unsafe{
 
@@ -254,9 +297,11 @@ fn draw_actor(p: actor::ActorView, v:&Vec<f32>, loc:i32){
                mem::transmute(&v[0]),
                gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
+        
         gl::Uniform3f(loc, p.x / 2000.0, p.y / 2000.0, p.rotation);
     }
 
+    
     // Draw a triangle from the 3 vertices
     gl::DrawArrays(gl::TRIANGLES, 0, 3);
 }
