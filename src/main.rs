@@ -152,7 +152,7 @@ fn main() {
         0.025, -0.05,
         -0.025, -0.05,
     );
-    let p = actor::Actor::new(0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
+    let p = actor::Actor::new(1, 0, 0, 0, 10, 10, 0.0, v, 1.1);
     actors.add(p);
 
     let v: Vec<GLfloat> = vec!(
@@ -167,34 +167,39 @@ fn main() {
     
     while !window.should_close() {
 
-
         // Poll events
         glfw.poll_events();
 
-        let mut messages = vec!();
-
-        for event in glfw::flush_messages(&events) {
-            handle_window_event(&window, event, &mut messages);
-        }
-
-        let acs = actors.get();
-        for &actor in acs.iter(){
-            if actor.t == 1 {
-                messages.push((actor.id, "begin_increase_throttle"));
-            }
-        }
-
+        
 
         let t2 = time::get_time();
+
+        // switch to 1 frame a second
+        //let fr = 1000000000;
+
         if t2.nsec - fr > t.nsec || t2.sec > t.sec {
             t = t2;
+
+            let mut messages = vec!();
+
+            for event in glfw::flush_messages(&events) {
+                handle_window_event(&window, event, &mut messages);
+            }
+
+            let acs = actors.get();
+            for &actor in acs.iter(){
+                if actor.t == 1 {
+                    messages.push((actor.id, "begin_increase_throttle"));
+                }
+            }
+
+            calculate_collisions(&actors, &mut messages);
 
             let mut output_messages = vec!();
 
             actors.update(messages, &mut output_messages);
             draw_scene(&actors, loc, &window);
             process_messages(&mut output_messages, &mut actors);
-
         }
 
     }
@@ -234,6 +239,28 @@ fn new_bullet(x: i32, y:i32, r:f32) -> actor::Actor{
     new_actor(1, x, y, 2, 2, r, v, 1.8)
 }
 
+fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
+
+    let actors = actor_manager.get();
+
+    for &actor in actors.iter(){
+        for &actor2 in actors.iter(){
+            if actor.id == actor2.id || actor.id == 0 || actor2.id == 0 {
+                continue;
+            }
+
+            let d = 10.0;
+            let a1 = &actor.get_view();
+            let a2 = &actor2.get_view();
+            
+            if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
+                messages.push((actor.id, "die"));
+                messages.push((actor2.id, "die"));
+            }
+        }
+    }
+}
+
 fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
@@ -255,15 +282,15 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::KeyEscape, glfw::Press) => window.set_should_close(true),
-                (glfw::KeyUp, glfw::Press) => messages.push((0, "begin_increase_throttle")),
-                (glfw::KeyDown, glfw::Press) => messages.push((0, "begin_decrease_throttle")),
-                (glfw::KeyUp, glfw::Release) => messages.push((0, "stop_increase_throttle")),
-                (glfw::KeyDown, glfw::Release) => messages.push((0, "stop_decrease_throttle")),
-                (glfw::KeyRight, glfw::Press) => messages.push((0, "begin_rotate_right")),
-                (glfw::KeyLeft, glfw::Press) => messages.push((0, "begin_rotate_left")),
-                (glfw::KeyRight, glfw::Release) => messages.push((0, "stop_rotate_right")),
-                (glfw::KeyLeft, glfw::Release) => messages.push((0, "stop_rotate_left")),
-                (glfw::KeySpace, glfw::Release) => messages.push((0, "fire")),
+                (glfw::KeyUp, glfw::Press) => messages.push((1, "begin_increase_throttle")),
+                (glfw::KeyDown, glfw::Press) => messages.push((1, "begin_decrease_throttle")),
+                (glfw::KeyUp, glfw::Release) => messages.push((1, "stop_increase_throttle")),
+                (glfw::KeyDown, glfw::Release) => messages.push((1, "stop_decrease_throttle")),
+                (glfw::KeyRight, glfw::Press) => messages.push((1, "begin_rotate_right")),
+                (glfw::KeyLeft, glfw::Press) => messages.push((1, "begin_rotate_left")),
+                (glfw::KeyRight, glfw::Release) => messages.push((1, "stop_rotate_right")),
+                (glfw::KeyLeft, glfw::Release) => messages.push((1, "stop_rotate_left")),
+                (glfw::KeySpace, glfw::Release) => messages.push((1, "fire")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();

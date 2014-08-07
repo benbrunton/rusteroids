@@ -1,6 +1,6 @@
 static PI : f32 = 3.14159265359;
 
-static mut count: i32 = 0;
+static mut count: i32 = 1;
 
 #[deriving(Clone, Show)]
 pub struct ActorView{
@@ -15,6 +15,7 @@ pub struct ActorView{
 pub struct Actor{
     pub id: i32,
     pub t: i32,
+    pub is_alive: bool,
     x: f32,
     y: f32,
     width: i32,
@@ -42,7 +43,8 @@ impl Actor{
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false,
             shape: shape,
-            acc: acc
+            acc: acc,
+            is_alive: true
         }
     }
     
@@ -96,6 +98,7 @@ impl Actor{
             "fire"                      => {
                                             output_messages.push(("fire", self.get_view().clone()));
                                         },
+            "die"                       => self.is_alive = false,
             _                           => ()
         };
     }

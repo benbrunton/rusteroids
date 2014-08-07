@@ -30,7 +30,9 @@ impl ActorManager {
 
             actor.update();
 
-            ac.push(actor);
+            if actor.is_alive {
+                ac.push(actor);
+            }
         }
 
         self.actors = ac;
