@@ -152,7 +152,7 @@ fn main() {
         0.025, -0.05,
         -0.025, -0.05,
     );
-    let p = actor::Actor::new(1, 0, 0, 0, 10, 10, 0.0, v, 1.1);
+    let p = actor::Actor::new(1, 0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
     actors.add(p);
 
     let v: Vec<GLfloat> = vec!(
@@ -161,7 +161,7 @@ fn main() {
         -0.025, -0.05,
     );
 
-    let e = new_actor(0, 100, 100, 2, 2, 0.0, v, 1.1);
+    let e = new_actor(0, 0, 100, 100, 2, 2, 0.0, v, 1.1);
     actors.add(e);
     
     
@@ -218,25 +218,25 @@ fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manag
 
     for &(msg, v) in output_messages.iter(){
         match msg{
-            "fire"  => actor_manager.add(new_bullet(v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
+            "fire"  => actor_manager.add(new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
             _       => ()
         }
     }
 
 }
 
-fn new_actor(t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
+fn new_actor(parent: i32, t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
     let id = actor::Actor::get_count();
-    actor::Actor::new(id, t, x, y, w, h, r, v, acc)
+    actor::Actor::new(id, parent, t, x, y, w, h, r, v, acc)
 }
 
-fn new_bullet(x: i32, y:i32, r:f32) -> actor::Actor{
+fn new_bullet(parent: i32, x: i32, y:i32, r:f32) -> actor::Actor{
     let v: Vec<GLfloat> = vec!(
         0.0,  0.005,
         0.005, -0.005,
         -0.005, -0.005,
     );
-    new_actor(1, x, y, 2, 2, r, v, 1.8)
+    new_actor(parent, 1, x, y, 2, 2, r, v, 1.8)
 }
 
 fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
@@ -245,7 +245,11 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
     for &actor in actors.iter(){
         for &actor2 in actors.iter(){
-            if actor.id == actor2.id || actor.id == 0 || actor2.id == 0 {
+            if actor.id == actor2.id 
+                || actor.id == 0 
+                || actor2.id == 0 
+                || actor.id == actor2.parent
+                || actor2.id == actor.parent {
                 continue;
             }
 
