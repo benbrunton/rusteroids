@@ -161,7 +161,7 @@ fn main() {
         -0.025, -0.05,
     );
 
-    let e = new_actor(0, 0, 100, 100, 2, 2, 0.0, v, 1.1);
+    let e = new_actor(0, 0, 400, 400, 2, 2, 0.0, v, 1.1);
     actors.add(e);
     
     
@@ -217,6 +217,7 @@ fn main() {
 fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manager: &mut actor_manager::ActorManager){
 
     for &(msg, v) in output_messages.iter(){
+        println!("message : {} - {}", msg, v);
         match msg{
             "fire"  => actor_manager.add(new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
             _       => ()
@@ -244,25 +245,29 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
     let actors = actor_manager.get();
 
     for &actor in actors.iter(){
-        for &actor2 in actors.iter(){
-            if actor.id == actor2.id 
-                || actor.id == 0 
-                || actor2.id == 0 
-                || actor.id == actor2.parent
-                || actor2.id == actor.parent {
+
+        let actors2 = actor_manager.get();
+        for &actor2 in actors2.iter(){
+
+            if     actor.id     == 0 
+                || actor2.id    == 0
+                || actor.id     == actor2.id  
+                || actor.id     == actor2.parent
+                || actor2.id    == actor.parent {
                 continue;
             }
 
-            let d = 10.0;
+            let d = 100.0;
             let a1 = &actor.get_view();
             let a2 = &actor2.get_view();
             
             if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
+                println!("boom! : {} + {}", actor.id, actor2.id);
                 messages.push((actor.id, "die"));
-                messages.push((actor2.id, "die"));
             }
         }
     }
+
 }
 
 fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
