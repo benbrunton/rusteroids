@@ -30,7 +30,8 @@ pub struct Actor{
     is_rotating_right: bool,
     is_rotating_left: bool,
     shape: Vec<f32>,
-    acc: f32
+    acc: f32,
+    age: i32
 }
 
 impl Actor{
@@ -46,7 +47,8 @@ impl Actor{
             is_rotating_right: false, is_rotating_left: false,
             shape: shape,
             acc: acc,
-            is_alive: true
+            is_alive: true,
+            age: 0
         }
     }
     
@@ -71,6 +73,11 @@ impl Actor{
         self.x += self.accX;
 
         self.slow_down();
+        self.age += 1;
+
+        if self.age > 70  && self.t == 1 {
+            self.is_alive = false;
+        }
     }
 
     pub fn get_view(&self) -> ActorView {
