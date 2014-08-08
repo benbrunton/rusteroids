@@ -20,14 +20,17 @@ static VS_SRC: &'static str =
    "#version 150\n\
     in vec4 shape;\n\
     uniform vec3 position;\n\
+    uniform vec2 camera;\n\
     void main() {\n\
         float x = shape[0];\n\
         float y = shape[1];\n\
         float x_pos = position[0];\n\
         float y_pos = position[1];\n\
         float angle = position[2];\n\
-        float xx = (x * cos(angle) + y * sin(angle)) + x_pos;\n\
-        float yy = (-x * sin(angle) + y * cos(angle)) + y_pos;\n\
+        float c_x   = camera[0];\n\
+        float c_y   = camera[1];\n\
+        float xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
+        float yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
         gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
     }";
 
@@ -113,6 +116,7 @@ fn main() {
     let mut vao = 0;
     let mut vbo = 0;
     let mut loc;
+    let mut cam;
 
     unsafe {
         // Create Vertex Array Object
@@ -138,6 +142,7 @@ fn main() {
                                 ptr::null());           // array buffer offset
 
         loc = "position".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+        cam = "camera".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
 
     }
 
@@ -198,7 +203,7 @@ fn main() {
             let mut output_messages = vec!();
 
             actors.update(messages, &mut output_messages);
-            draw_scene(&actors, loc, &window);
+            draw_scene(&actors, loc, cam, &window);
             process_messages(&mut output_messages, &mut actors);
         }
 
@@ -314,9 +319,12 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
     }
 }
 
-fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, window: &glfw::Window){
+fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, window: &glfw::Window){
 
     let actors = actor_manager.get();
+
+    let mut cx:f32 = 0.0;
+    let mut cy:f32 = 0.0;
 
     // Clear the screen to black
     gl::ClearColor(0.2, 0.2, 0.4, 1.0);
@@ -325,13 +333,18 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, window: &glfw
     for &actor in actors.iter() {
         let v = &actor.get_view();
         let s = actor.get_shape();
-        draw_actor(v, s, loc);
+
+        if actor.id == 1 {
+            cx = v.x;
+            cy = v.y;
+        }
+        draw_actor(v, s, loc, cam, cx, cy);
     }
 
     window.swap_buffers();
 }
 
-fn draw_actor(p: &actor::ActorView, v:&Vec<f32>, loc:i32){
+fn draw_actor(p: &actor::ActorView, v:&Vec<f32>, loc:i32, cam:i32, cx: f32, cy: f32){
     
     unsafe{
 
@@ -342,6 +355,7 @@ fn draw_actor(p: &actor::ActorView, v:&Vec<f32>, loc:i32){
 
         
         gl::Uniform3f(loc, p.x / 2000.0, p.y / 2000.0, p.rotation);
+        gl::Uniform2f(cam, cx / 2000.0, cy / 2000.0);
     }
 
     
