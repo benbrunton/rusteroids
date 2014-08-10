@@ -157,7 +157,7 @@ fn main() {
     let v: Vec<GLfloat> = vec!(
         0.0,  0.05,
         0.025, -0.05,
-        -0.025, -0.05,
+        -0.025, -0.05
     );
     let p = actor::Actor::new(1, 0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
     actors.add(p);
@@ -165,7 +165,7 @@ fn main() {
     let v: Vec<GLfloat> = vec!(
         0.0,  0.05,
         0.025, -0.05,
-        -0.025, -0.05,
+        -0.025, -0.05
     );
 
     let e = new_actor(0, 0, 400, 400, 2, 2, 0.0, v, 1.1);
@@ -209,6 +209,10 @@ fn main() {
                 if actor.t == 1 {
                     messages.push((actor.id, "begin_increase_throttle"));
                 }
+
+                if actor.t == 2 {
+                    messages.push((actor.id, "begin_increase_throttle"));   
+                }
             }
 
             calculate_collisions(&actors, &mut messages);
@@ -220,6 +224,8 @@ fn main() {
             process_messages(&mut output_messages, &mut actors);
 
 
+
+            // every second
             let t3 = time::get_time();
             if t3.sec > inner_t.sec {
                 inner_t = t3;
@@ -234,11 +240,18 @@ fn main() {
                         println!(":: y  :: {}", p.y);
                         println!(":: dx :: {}", actor.accX);
                         println!(":: dy :: {}", actor.accY);
+
+                        if actors.get().len() < 12 {
+                            output_messages.push(("enemy", p));
+                        }
                     }
                 }
 
                 println!("::  {}s  ::::::::::::::::::::::::::::::\n", t3.sec - global_time.sec);
                 
+                
+
+                process_messages(&mut output_messages, &mut actors);
 
             }
 
@@ -266,10 +279,16 @@ fn main() {
 
 fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manager: &mut actor_manager::ActorManager){
 
+    let sh: Vec<GLfloat> = vec!(
+            0.0,  0.05,
+            0.025, -0.05,
+            -0.025, -0.05,
+        );
     for &(msg, v) in output_messages.iter(){
         println!("message : {} - {}", msg, v);
         match msg{
             "fire"  => actor_manager.add(new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
+            "enemy" => actor_manager.add(new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation, sh.clone(), 1.1)),
             _       => ()
         }
     }
