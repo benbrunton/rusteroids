@@ -146,7 +146,9 @@ fn main() {
 
     }
 
+    let global_time = time::get_time();
     let mut t = time::get_time();
+    let mut inner_t = time::get_time();
     let fr:i32 = 100000000 / 60;
 
 
@@ -179,10 +181,21 @@ fn main() {
 
         let t2 = time::get_time();
 
+
+        //////////////////////////////////////
+        //
+        //     INNER LOOP
+        //     
+        //////////////////////////////////////
+
+
         // switch to 1 frame a second
         //let fr = 1000000000;
 
+
         if t2.nsec - fr > t.nsec || t2.sec > t.sec {
+
+
             t = t2;
 
             let mut messages = vec!();
@@ -205,7 +218,39 @@ fn main() {
             actors.update(messages, &mut output_messages);
             draw_scene(&actors, loc, cam, &window);
             process_messages(&mut output_messages, &mut actors);
+
+
+            let t3 = time::get_time();
+            if t3.sec > inner_t.sec {
+                inner_t = t3;
+                println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
+                println!("# of actors : {}", actors.get().len());
+                for &actor in actors.get().iter(){
+                    if actor.id == 1 {
+
+                        let p = actor.get_view();
+                        println!("Player::");
+                        println!(":: x  :: {}", p.x);
+                        println!(":: y  :: {}", p.y);
+                        println!(":: dx :: {}", actor.accX);
+                        println!(":: dy :: {}", actor.accY);
+                    }
+                }
+
+                println!("::  {}s  ::::::::::::::::::::::::::::::\n", t3.sec - global_time.sec);
+                
+
+            }
+
         }
+
+
+
+        //////////////////////////////////////
+        //
+        // END OF INNER LOOP
+        // 
+        ///////////////////////////////////////
 
     }
 
