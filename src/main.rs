@@ -10,6 +10,7 @@ use glfw::Context;
 use std::mem;
 use std::ptr;
 use std::str;
+use std::rand::Rng;
 
 mod actor;
 mod actor_manager;
@@ -177,8 +178,6 @@ fn main() {
         // Poll events
         glfw.poll_events();
 
-        
-
         let t2 = time::get_time();
 
 
@@ -223,6 +222,7 @@ fn main() {
             draw_scene(&actors, loc, cam, &window);
             process_messages(&mut output_messages, &mut actors);
 
+            generate_actors(&mut actors);
 
 
             // every second
@@ -281,11 +281,35 @@ fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manag
         println!("message : {} - {}", msg, v);
         match msg{
             "fire"  => actor_manager.add(new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
-            "enemy" => actor_manager.add(new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation, sh.clone(), 1.1)),
+            "enemy" => actor_manager.add(new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
             _       => ()
         }
     }
 
+}
+
+fn generate_actors(actors: &mut actor_manager::ActorManager){
+    let sh: Vec<GLfloat> = vec!(
+        0.0,  0.05,
+        0.025, -0.05,
+        -0.025, -0.05,
+    );
+
+    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0};
+
+    for &mut actor in actors.get().iter(){
+        if actor.id == 1 {
+            player_pos = actor.get_view();
+            break;
+        }
+    }
+
+    while actors.get().len() < 100 {
+        let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
+        let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
+        let ac = new_actor(0, 0, x, y, 2, 2, 0.0, sh.clone(), 1.1);
+        actors.add(ac);
+    }
 }
 
 fn new_actor(parent: i32, t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{

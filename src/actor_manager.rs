@@ -20,7 +20,7 @@ impl ActorManager {
 
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
         let mut ac = vec!();
-        let threshold = 2000.0;
+        let threshold = 4000.0;
         let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0};
 
         for &mut actor in self.get().iter(){
