@@ -58,4 +58,36 @@ impl ActorManager {
 
         self.actors = ac;
     }
+
+    pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
+
+        let sh: Vec<f32> = vec!(
+                0.0,  0.05,
+                0.025, -0.05,
+                -0.025, -0.05,
+            );
+
+        for &(msg, v) in output_messages.iter(){
+            match msg{
+                "fire"  => self.add(ActorManager::new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
+                "enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
+                _       => ()
+            }
+        }
+
+    }
+
+    fn new_bullet(parent: i32, x: i32, y:i32, r:f32) -> actor::Actor{
+        let v: Vec<f32> = vec!(
+            0.0,  0.005,
+            0.005, -0.005,
+            -0.005, -0.005,
+        );
+        ActorManager::new_actor(parent, 1, x, y, 2, 2, r, v, 1.8)
+    }
+
+    fn new_actor(parent: i32, t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
+        let id = actor::Actor::get_count();
+        actor::Actor::new(id, parent, t, x, y, w, h, r, v, acc)
+    }
 }

@@ -162,16 +162,6 @@ fn main() {
     );
     let p = actor::Actor::new(1, 0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
     actors.add(p);
-
-    let v: Vec<GLfloat> = vec!(
-        0.0,  0.05,
-        0.025, -0.05,
-        -0.025, -0.05
-    );
-
-    let e = new_actor(0, 0, 400, 400, 2, 2, 0.0, v, 1.1);
-    actors.add(e);
-    
     
     while !window.should_close() {
 
@@ -220,7 +210,8 @@ fn main() {
 
             actors.update(messages, &mut output_messages);
             draw_scene(&actors, loc, cam, &window);
-            process_messages(&mut output_messages, &mut actors);
+
+            actors.process_messages(&mut output_messages);
 
             generate_actors(&mut actors);
 
@@ -270,24 +261,6 @@ fn main() {
     }
 }
 
-fn process_messages(output_messages: &Vec<(&str, actor::ActorView)>, actor_manager: &mut actor_manager::ActorManager){
-
-    let sh: Vec<GLfloat> = vec!(
-            0.0,  0.05,
-            0.025, -0.05,
-            -0.025, -0.05,
-        );
-    for &(msg, v) in output_messages.iter(){
-        println!("message : {} - {}", msg, v);
-        match msg{
-            "fire"  => actor_manager.add(new_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359)),
-            "enemy" => actor_manager.add(new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
-            _       => ()
-        }
-    }
-
-}
-
 fn generate_actors(actors: &mut actor_manager::ActorManager){
     let sh: Vec<GLfloat> = vec!(
         0.0,  0.05,
@@ -308,22 +281,18 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
         let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
         let ac = new_actor(0, 0, x, y, 2, 2, 0.0, sh.clone(), 1.1);
-        actors.add(ac);
+        let x_dis = x - player_pos.x as i32;
+        let y_dis = y - player_pos.y as i32;
+        let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
+        if distance > 2600.0{
+            actors.add(ac);
+        }
     }
 }
 
 fn new_actor(parent: i32, t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
     let id = actor::Actor::get_count();
     actor::Actor::new(id, parent, t, x, y, w, h, r, v, acc)
-}
-
-fn new_bullet(parent: i32, x: i32, y:i32, r:f32) -> actor::Actor{
-    let v: Vec<GLfloat> = vec!(
-        0.0,  0.005,
-        0.005, -0.005,
-        -0.005, -0.005,
-    );
-    new_actor(parent, 1, x, y, 2, 2, r, v, 1.8)
 }
 
 fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
