@@ -1,6 +1,7 @@
 use std::fmt::Show;
 use std::cmp::PartialEq;
 
+
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorView{
     pub id: i32,
@@ -10,7 +11,8 @@ pub struct ActorView{
     pub width: i32,
     pub height: i32,
     pub rotation: f32,
-    pub shape: Vec<f32>
+    pub shape: Vec<f32>,
+    pub color: Vec<f32>
 }
 
 

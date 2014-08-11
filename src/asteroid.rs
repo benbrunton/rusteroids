@@ -11,7 +11,8 @@ pub struct Asteroid{
     y: f32,
     rotation: f32,
     shape: Vec<f32>,
-    is_alive:bool
+    is_alive:bool,
+    color: Vec<f32>
 }
 
 impl Asteroid{
@@ -26,12 +27,13 @@ impl Asteroid{
             -0.05,   0.05
         );
 
-
+        let color = vec!(0.2, 0.2, 0.3);
         Asteroid{
             id: id, x: x as f32, y: y as f32,
             rotation: 0.0,
             shape: shape,
-            is_alive: true
+            is_alive: true,
+            color: color
         }
     }
 }
@@ -52,7 +54,8 @@ impl Actor for Asteroid{
             width: 1, 
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
-            shape: self.shape.clone()
+            shape: self.shape.clone(),
+            color: self.color.clone()
         }
     }
 

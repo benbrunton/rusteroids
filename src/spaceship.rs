@@ -17,7 +17,8 @@ pub struct Spaceship{
     is_rotating_left: bool,
     shape: Vec<f32>,
     acc: f32,
-    is_alive:bool
+    is_alive:bool,
+    color: Vec<f32>
 }
 
 impl Spaceship{
@@ -30,6 +31,8 @@ impl Spaceship{
 
         let acc = 1.05;
 
+        let color = vec!(0.5, 0.2, 0.2);
+
         Spaceship{
             id: id, x: x as f32, y: y as f32,
             rotation: rotation, accX: 0.0, accY: 0.0,
@@ -37,7 +40,8 @@ impl Spaceship{
             is_rotating_right: false, is_rotating_left: false,
             shape: shape,
             acc: acc,
-            is_alive: true
+            is_alive: true,
+            color: color
         }
     }
 
@@ -147,7 +151,8 @@ impl Actor for Spaceship{
             width: 1, 
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
-            shape: self.shape.clone()
+            shape: self.shape.clone(),
+            color: self.color.clone()
         }
     }
 
@@ -164,7 +169,10 @@ impl Actor for Spaceship{
             "fire"                      => {
                                             output_messages.push(("fire", self.get_view().clone()));
                                         },
-            "die"                       => self.is_alive = false,
+            "die"                       => {
+                                            self.is_alive = false;
+                                            output_messages.push(("explode", self.get_view().clone()));
+                                        },
             _                           => ()
         };
     }

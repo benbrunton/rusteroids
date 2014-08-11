@@ -18,6 +18,7 @@ mod spaceship;
 mod bullet;
 mod asteroid;
 mod kamikaze;
+mod explosion;
 
 // Shader sources
 // vertex shader
@@ -44,8 +45,9 @@ static VS_SRC: &'static str =
 static FS_SRC: &'static str =
    "#version 150\n\
     out vec4 out_color;\n\
+    uniform vec3 color;\n\
     void main() {\n\
-       out_color = vec4(1.0, 0.3, 0.3, 0.8);\n\
+       out_color = vec4(color, 0.8);\n\
     }";
 
 
@@ -122,6 +124,7 @@ fn main() {
     let mut vbo = 0;
     let mut loc;
     let mut cam;
+    let mut color;
 
     unsafe {
         // Create Vertex Array Object
@@ -155,7 +158,7 @@ fn main() {
 
         loc = "position".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
         cam = "camera".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-
+        color = "color".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
     }
 
     let global_time = time::get_time();
@@ -216,7 +219,7 @@ fn main() {
 
             actors.update(messages, &mut output_messages);
 
-            draw_scene(&actors, loc, cam, &window);
+            draw_scene(&actors, loc, cam, color, &window);
 
             actors.process_messages(&mut output_messages);
 
@@ -274,7 +277,8 @@ fn main() {
 }
 
 fn generate_actors(actors: &mut actor_manager::ActorManager){
-    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, parent:0, shape:vec!()};
+    let max_actors = 30;
+    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, parent:0, shape:vec!(), color:vec!()};
 
     for &mut actor in actors.get().iter(){
         if actor.id == 1 {
@@ -283,7 +287,7 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         }
     }
 
-    while actors.get().len() < 30 {
+    while actors.get().len() < max_actors {
         let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
         let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
         
@@ -296,7 +300,7 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
             match rand {
                 0..50  => actors.new_asteroid(x, y),
                 51..79 => actors.new_spaceship(x, y, 0.0),
-                80..85 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
+                80..89 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
                 _      => ()
             }
         }
@@ -332,7 +336,6 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 || a1.id    == a2.id
                 || a1.id    == a2.parent
                 || a2.id    == a1.parent {
-                    //println!("not valid collision:\n\t{}\n\t{}", a1, a2);
                 continue;
             }
 
@@ -390,7 +393,7 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
     }
 }
 
-fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, window: &glfw::Window){
+fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, window: &glfw::Window){
 
     let actors = actor_manager.get();
 
@@ -406,13 +409,14 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, wind
             cx = v.x;
             cy = v.y;
         }
-        draw_actor(&v, loc, cam, cx, cy);
+
+        draw_actor(&v, loc, cam, color, cx, cy);
     }
 
     window.swap_buffers();
 }
 
-fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, cx: f32, cy: f32){
+fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f32){
     
     unsafe{
 
@@ -424,6 +428,7 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, cx: f32, cy: f32){
         
         gl::Uniform3f(loc, p.x / 2000.0, p.y / 2000.0, p.rotation);
         gl::Uniform2f(cam, cx / 2000.0, cy / 2000.0);
+        gl::Uniform3f(color, p.color[0], p.color[1], p.color[2]);
     }
 
     

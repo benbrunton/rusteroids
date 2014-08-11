@@ -13,7 +13,8 @@ pub struct Bullet{
     rotation: f32,
     shape: Vec<f32>,
     is_alive:bool,
-    parent: i32
+    parent: i32,
+    color: Vec<f32>
 }
 
 
@@ -25,6 +26,8 @@ impl Bullet{
             -0.005, -0.005,
         );
 
+        let color = vec!(0.2, 0.8, 0.2);
+
         let acc = 100.0;
         let (dirx, diry) = Bullet::get_rotate_vec(rotation);
         let accX = acc * dirx;
@@ -34,7 +37,8 @@ impl Bullet{
             id: id, parent: parent, x: x as f32, y: y as f32,
             rotation: rotation, accX: accX, accY: accY,
             shape: shape,
-            is_alive: true
+            is_alive: true,
+            color: color
         }
     }
 
@@ -62,7 +66,8 @@ impl Actor for Bullet{
             width: 1, 
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
-            shape: self.shape.clone()
+            shape: self.shape.clone(),
+            color: self.color.clone()
         }
     }
 
