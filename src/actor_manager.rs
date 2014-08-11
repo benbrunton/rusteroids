@@ -65,8 +65,17 @@ impl ActorManager {
 
     }
 
-    pub fn add_spaceship(&mut self, ship:spaceship::Spaceship){
-        self.spaceships.push(ship);
+    pub fn new_player(&mut self){
+        let p = spaceship::Spaceship::new(1, 0, 0, 0.0);
+        self.spaceships.push(p);
+    }
+
+    pub fn restart(&mut self){
+        self.spaceships = vec!();
+        self.bullets = vec!();
+        self.asteroids = vec!();
+        self.kamikaze = vec!();
+        self.new_player();
     }
 
     pub fn new_spaceship(&mut self, x: i32, y:i32, r: f32){

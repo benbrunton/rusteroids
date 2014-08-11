@@ -165,9 +165,7 @@ fn main() {
 
 
     let mut actors = actor_manager::ActorManager::new();
-
-    let p = spaceship::Spaceship::new(1, 0, 0, 0.0);
-    actors.add_spaceship(p);
+    actors.new_player();
     
     while !window.should_close() {
 
@@ -225,6 +223,9 @@ fn main() {
             generate_actors(&mut actors);
 
 
+
+
+
             // every second
             let t3 = time::get_time();
             if t3.sec > inner_t.sec {
@@ -242,6 +243,8 @@ fn main() {
                 }
 
                 println!("::  {}s  ::::::::::::::::::::::::::::::\n", t3.sec - global_time.sec);
+
+                restart(&mut actors);
                 
             }
 
@@ -297,6 +300,20 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
                 _      => ()
             }
         }
+    }
+}
+
+fn restart(actors: &mut actor_manager::ActorManager){
+    let mut player_exists = false;
+    for &mut actor in actors.get().iter(){
+        if actor.id == 1 {
+            player_exists = true;
+            break;
+        }
+    }
+
+    if !player_exists{
+        actors.restart();
     }
 }
 
