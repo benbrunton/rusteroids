@@ -75,9 +75,9 @@ impl Actor{
         self.slow_down();
         self.age += 1;
 
-        if self.age > 70  && self.t == 1 {
-            self.is_alive = false;
-        }
+        // if self.age > 70  && self.t == 1 {
+        //     self.is_alive = false;
+        // }
     }
 
     pub fn get_view(&self) -> ActorView {
@@ -117,6 +117,10 @@ impl Actor{
         unsafe {
             count
         }
+    }
+
+    pub fn kill(&mut self){
+        self.is_alive = false;
     }
 
     fn begin_increase_throttle(&mut self){

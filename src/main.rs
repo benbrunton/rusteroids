@@ -241,18 +241,11 @@ fn main() {
                         println!(":: dx :: {}", actor.accX);
                         println!(":: dy :: {}", actor.accY);
 
-                        if actors.get().len() < 12 {
-                            output_messages.push(("enemy", p));
-                        }
                     }
                 }
 
                 println!("::  {}s  ::::::::::::::::::::::::::::::\n", t3.sec - global_time.sec);
                 
-                
-
-                process_messages(&mut output_messages, &mut actors);
-
             }
 
         }
