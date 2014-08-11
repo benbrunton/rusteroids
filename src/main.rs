@@ -14,6 +14,8 @@ use std::rand::Rng;
 
 mod actor;
 mod actor_manager;
+mod spaceship;
+mod bullet;
 
 // Shader sources
 // vertex shader
@@ -155,13 +157,8 @@ fn main() {
 
     let mut actors = actor_manager::ActorManager::new();
 
-    let v: Vec<GLfloat> = vec!(
-        0.0,  0.05,
-        0.025, -0.05,
-        -0.025, -0.05
-    );
-    let p = actor::Actor::new(1, 0, 0, 0, 0, 10, 10, 0.0, v, 1.1);
-    actors.add(p);
+    let p = spaceship::Spaceship::new(1, 0, 0, 0.0);
+    actors.add_spaceship(p);
     
     while !window.should_close() {
 
@@ -193,22 +190,25 @@ fn main() {
                 handle_window_event(&window, event, &mut messages);
             }
 
-            let acs = actors.get();
-            for &actor in acs.iter(){
-                if actor.t == 1 {
-                    messages.push((actor.id, "begin_increase_throttle"));
-                }
+            // let acs = actors.get();
+            // for &actor in acs.iter(){
+            //     if actor.t == 1 {
+            //         messages.push((actor.id, "begin_increase_throttle"));
+            //     }
 
-                if actor.t == 2 {
-                    messages.push((actor.id, "begin_increase_throttle"));   
-                }
-            }
+            //     if actor.t == 2 {
+            //         messages.push((actor.id, "begin_increase_throttle"));   
+            //     }
+            // }
+
 
             calculate_collisions(&actors, &mut messages);
+
 
             let mut output_messages = vec!();
 
             actors.update(messages, &mut output_messages);
+
             draw_scene(&actors, loc, cam, &window);
 
             actors.process_messages(&mut output_messages);
@@ -225,13 +225,10 @@ fn main() {
                 for &actor in actors.get().iter(){
                     if actor.id == 1 {
 
-                        let p = actor.get_view();
                         println!("Player::");
-                        println!(":: x  :: {}", p.x);
-                        println!(":: y  :: {}", p.y);
-                        println!(":: dx :: {}", actor.accX);
-                        println!(":: dy :: {}", actor.accY);
-
+                        println!(":: x  :: {}", actor.x);
+                        println!(":: y  :: {}", actor.y);
+                        break;
                     }
                 }
 
@@ -248,6 +245,9 @@ fn main() {
         // END OF INNER LOOP
         // 
         ///////////////////////////////////////
+        
+
+        //window.set_should_close(true);
 
     }
 
@@ -262,17 +262,11 @@ fn main() {
 }
 
 fn generate_actors(actors: &mut actor_manager::ActorManager){
-    let sh: Vec<GLfloat> = vec!(
-        0.0,  0.05,
-        0.025, -0.05,
-        -0.025, -0.05,
-    );
-
-    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0};
+    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, parent:0, shape:vec!()};
 
     for &mut actor in actors.get().iter(){
         if actor.id == 1 {
-            player_pos = actor.get_view();
+            player_pos = actor;
             break;
         }
     }
@@ -280,44 +274,41 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
     while actors.get().len() < 100 {
         let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
         let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
-        let ac = new_actor(0, 0, x, y, 2, 2, 0.0, sh.clone(), 1.1);
+        
         let x_dis = x - player_pos.x as i32;
         let y_dis = y - player_pos.y as i32;
         let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
+
         if distance > 2600.0{
-            actors.add(ac);
+            let ac = actors.new_actor(x, y, 0.0);
+            actors.add_spaceship(ac);
         }
     }
 }
 
-fn new_actor(parent: i32, t:i32, x: i32, y:i32, w: i32, h: i32, r: f32, v: Vec<f32>, acc:f32) -> actor::Actor{
-    let id = actor::Actor::get_count();
-    actor::Actor::new(id, parent, t, x, y, w, h, r, v, acc)
-}
 
 fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
 
     let actors = actor_manager.get();
 
-    for &actor in actors.iter(){
-
+    for &a1 in actors.iter(){
         let actors2 = actor_manager.get();
-        for &actor2 in actors2.iter(){
 
-            if     actor.id     == 0 
-                || actor2.id    == 0
-                || actor.id     == actor2.id  
-                || actor.id     == actor2.parent
-                || actor2.id    == actor.parent {
+        for &a2 in actors2.iter(){
+
+            if     a1.id    == 0 
+                || a2.id    == 0
+                || a1.id    == a2.id
+                || a1.id    == a2.parent
+                || a2.id    == a1.parent {
+                    //println!("not valid collision:\n\t{}\n\t{}", a1, a2);
                 continue;
             }
 
             let d = 100.0;
-            let a1 = &actor.get_view();
-            let a2 = &actor2.get_view();
             
             if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
-                messages.push((actor.id, "die"));
+                messages.push((a1.id, "die"));
             }
         }
     }
@@ -379,27 +370,24 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, wind
     gl::ClearColor(0.2, 0.2, 0.4, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
-    for &actor in actors.iter() {
-        let v = &actor.get_view();
-        let s = actor.get_shape();
-
-        if actor.id == 1 {
+    for &v in actors.iter() {
+        if v.id == 1 {
             cx = v.x;
             cy = v.y;
         }
-        draw_actor(v, s, loc, cam, cx, cy);
+        draw_actor(&v, loc, cam, cx, cy);
     }
 
     window.swap_buffers();
 }
 
-fn draw_actor(p: &actor::ActorView, v:&Vec<f32>, loc:i32, cam:i32, cx: f32, cy: f32){
+fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, cx: f32, cy: f32){
     
     unsafe{
 
         gl::BufferData(gl::ARRAY_BUFFER,
-               (v.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-               mem::transmute(&v[0]),
+               (p.shape.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+               mem::transmute(&p.shape[0]),
                gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
         
