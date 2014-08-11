@@ -28,7 +28,7 @@ impl Spaceship{
             -0.025, -0.05
         );
 
-        let acc = 1.1;
+        let acc = 1.05;
 
         Spaceship{
             id: id, x: x as f32, y: y as f32,

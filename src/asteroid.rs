@@ -3,60 +3,49 @@ use actor::ActorView;
 
 static PI : f32 = 3.14159265359;
 
+
 #[deriving(Show, Clone, PartialEq)]
-pub struct Bullet{
+pub struct Asteroid{
     id: i32,
     x: f32,
     y: f32,
-    accX: f32,
-    accY: f32,
     rotation: f32,
     shape: Vec<f32>,
-    is_alive:bool,
-    parent: i32
+    is_alive:bool
 }
 
-
-impl Bullet{
-    pub fn new(id: i32, parent: i32, x: i32, y: i32, rotation: f32) -> Bullet { 
+impl Asteroid{
+    pub fn new(id: i32, x: i32, y: i32) -> Asteroid { 
         let shape = vec!(
-            0.0,  0.005,
-            0.005, -0.005,
-            -0.005, -0.005,
+            -0.05,  -0.05,
+            0.05,   -0.05,
+            -0.05,   0.05,
+            -0.05,   0.05,
+            0.05,    0.05,
+            0.05,   -0.05
         );
 
-        let acc = 100.0;
-        let (dirx, diry) = Bullet::get_rotate_vec(rotation);
-        let accX = acc * dirx;
-        let accY = acc * diry;
 
-        Bullet{
-            id: id, parent: parent, x: x as f32, y: y as f32,
-            rotation: rotation, accX: accX, accY: accY,
+        Asteroid{
+            id: id, x: x as f32, y: y as f32,
+            rotation: 0.0,
             shape: shape,
             is_alive: true
         }
     }
-
-    fn get_rotate_vec(rotation:f32) -> (f32, f32){
-        let r = (rotation * PI) / 180.0;
-        (r.sin(), r.cos())
-    }
 }
 
 
-impl Actor for Bullet{
+impl Actor for Asteroid{
     
     fn update(&mut self){
-        self.y += self.accY;
-        self.x += self.accX;
-
+        
     }
 
     fn get_view(&self) -> ActorView {
         ActorView {
             id: self.id,
-            parent: self.parent,
+            parent: 0,
             x: self.x, 
             y: self.y,
             width: 1, 

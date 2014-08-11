@@ -1,26 +1,32 @@
 use actor;
 use spaceship;
 use bullet;
+use asteroid;
 
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorManager{
     spaceships: Vec<spaceship::Spaceship>,
     bullets: Vec<bullet::Bullet>,
+    asteroids: Vec<asteroid::Asteroid>,
     count:i32
 }
 
 impl ActorManager {
     pub fn new() -> ActorManager {
-        ActorManager { spaceships : vec!(), bullets: vec!(), count: 1 }
+        ActorManager { 
+            spaceships : vec!(), 
+            bullets: vec!(), 
+            asteroids: vec!(),
+            count: 1 
+        }
     }
 
-    pub fn add_spaceship(&mut self, ship:spaceship::Spaceship){
-        self.spaceships.push(ship);
-    }
+    
 
     pub fn get(&self) -> Vec<actor::ActorView> {
         let mut all_views = ActorManager::get_views(&self.spaceships.clone());
         all_views.push_all(ActorManager::get_views(&self.bullets.clone()).slice_from(0));
+        all_views.push_all(ActorManager::get_views(&self.asteroids.clone()).slice_from(0));
         all_views
     }
 
@@ -38,6 +44,7 @@ impl ActorManager {
 
         self.spaceships = ActorManager::update_actor_list(player_pos.clone(), &mut self.spaceships, messages.clone(), output_messages);
         self.bullets    = ActorManager::update_actor_list(player_pos.clone(), &mut self.bullets, messages.clone(), output_messages);
+        self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, messages.clone(), output_messages);
     }
 
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
@@ -53,10 +60,22 @@ impl ActorManager {
 
     }
 
-    pub fn new_actor(&mut self, x: i32, y:i32, r: f32) -> spaceship::Spaceship{
+    pub fn add_spaceship(&mut self, ship:spaceship::Spaceship){
+        self.spaceships.push(ship);
+    }
+
+    pub fn new_spaceship(&mut self, x: i32, y:i32, r: f32){
         self.count += 1;
         let id = self.count;
-        spaceship::Spaceship::new(id, x, y, r)
+        let ship = spaceship::Spaceship::new(id, x, y, r);
+        self.spaceships.push(ship);
+    }
+
+    pub fn new_asteroid(&mut self, x: i32, y:i32){
+        self.count += 1;
+        let id = self.count;
+        let ast = asteroid::Asteroid::new(id, x, y);
+        self.asteroids.push(ast);
     }
 
     fn add_bullet(&mut self, parent:i32, x:i32, y:i32, r:f32){
