@@ -17,6 +17,7 @@ mod actor_manager;
 mod spaceship;
 mod bullet;
 mod asteroid;
+mod kamikaze;
 
 // Shader sources
 // vertex shader
@@ -279,7 +280,7 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         }
     }
 
-    while actors.get().len() < 100 {
+    while actors.get().len() < 30 {
         let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
         let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
         
@@ -288,9 +289,13 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
 
         if distance > 2600.0{
-             actors.new_spaceship(x, y, 0.0);
-            
-            //actors.new_asteroid(x, y);
+            let rand = std::rand::task_rng().gen_range(0u32, 100);
+            match rand {
+                0..50  => actors.new_asteroid(x, y),
+                51..79 => actors.new_spaceship(x, y, 0.0),
+                80..85 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
+                _      => ()
+            }
         }
     }
 }
@@ -406,5 +411,5 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, cx: f32, cy: f32){
 
     
     // Draw a triangle from the 3 vertices
-    gl::DrawArrays(gl::TRIANGLES, 0, p.shape.len() as i32 / 2);
+    gl::DrawArrays(gl::TRIANGLE_STRIP, 0, p.shape.len() as i32 / 2);
 }

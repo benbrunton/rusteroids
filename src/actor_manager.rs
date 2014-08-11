@@ -2,12 +2,14 @@ use actor;
 use spaceship;
 use bullet;
 use asteroid;
+use kamikaze;
 
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorManager{
     spaceships: Vec<spaceship::Spaceship>,
     bullets: Vec<bullet::Bullet>,
     asteroids: Vec<asteroid::Asteroid>,
+    kamikaze: Vec<kamikaze::Kamikaze>,
     count:i32
 }
 
@@ -17,6 +19,7 @@ impl ActorManager {
             spaceships : vec!(), 
             bullets: vec!(), 
             asteroids: vec!(),
+            kamikaze: vec!(),
             count: 1 
         }
     }
@@ -27,6 +30,7 @@ impl ActorManager {
         let mut all_views = ActorManager::get_views(&self.spaceships.clone());
         all_views.push_all(ActorManager::get_views(&self.bullets.clone()).slice_from(0));
         all_views.push_all(ActorManager::get_views(&self.asteroids.clone()).slice_from(0));
+        all_views.push_all(ActorManager::get_views(&self.kamikaze.clone()).slice_from(0));
         all_views
     }
 
@@ -45,6 +49,7 @@ impl ActorManager {
         self.spaceships = ActorManager::update_actor_list(player_pos.clone(), &mut self.spaceships, messages.clone(), output_messages);
         self.bullets    = ActorManager::update_actor_list(player_pos.clone(), &mut self.bullets, messages.clone(), output_messages);
         self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, messages.clone(), output_messages);
+        self.kamikaze  = ActorManager::update_actor_list(player_pos.clone(), &mut self.kamikaze, messages.clone(), output_messages);
     }
 
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
@@ -76,6 +81,13 @@ impl ActorManager {
         let id = self.count;
         let ast = asteroid::Asteroid::new(id, x, y);
         self.asteroids.push(ast);
+    }
+
+    pub fn new_kamikaze(&mut self, x: i32, y:i32, target:(f32, f32)){
+        self.count += 1;
+        let id = self.count;
+        let kam = kamikaze::Kamikaze::new(id, x, y, target);
+        self.kamikaze.push(kam);
     }
 
     fn add_bullet(&mut self, parent:i32, x:i32, y:i32, r:f32){
