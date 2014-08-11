@@ -130,13 +130,13 @@ fn main() {
         // Create a Vertex Buffer Object and copy the vertex data to it
         gl::GenBuffers(1, &mut vbo);
 
- //        // Generate a buffer for the indices
+        // Generate a buffer for the indices
  // GLuint elementbuffer;
  // glGenBuffers(1, &elementbuffer);
  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
 
- 
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, vbo);
+
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
         // Use shader program
         gl::UseProgram(program);
@@ -288,9 +288,9 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
 
         if distance > 2600.0{
-            // actors.new_spaceship(x, y, 0.0);
+             actors.new_spaceship(x, y, 0.0);
             
-            actors.new_asteroid(x, y);
+            //actors.new_asteroid(x, y);
         }
     }
 }
