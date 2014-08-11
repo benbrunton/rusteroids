@@ -317,7 +317,6 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
             let a2 = &actor2.get_view();
             
             if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
-                println!("boom! : {} + {}", actor.id, actor2.id);
                 messages.push((actor.id, "die"));
             }
         }
