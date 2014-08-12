@@ -1,6 +1,12 @@
 use std::fmt::Show;
 use std::cmp::PartialEq;
 
+#[deriving(Clone, Show, PartialEq)]
+pub enum CollisionType{
+    Collide,
+    Collect,
+    Ignore
+}
 
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorView{
@@ -12,7 +18,25 @@ pub struct ActorView{
     pub height: i32,
     pub rotation: f32,
     pub shape: Vec<f32>,
-    pub color: Vec<f32>
+    pub color: Vec<f32>,
+    pub collision_type: CollisionType
+}
+
+impl ActorView{
+    pub fn empty() -> ActorView {
+        ActorView{
+            id:0,
+            parent:0, 
+            x:0.0, 
+            y:0.0, 
+            width:0, 
+            height:0, 
+            rotation:0.0, 
+            shape:vec!(), 
+            color:vec!(),
+            collision_type: Ignore
+        }
+    }
 }
 
 

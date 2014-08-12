@@ -44,7 +44,7 @@ impl ActorManager {
     
 
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
-        let mut player_pos:actor::ActorView = actor::ActorView{id:0,parent:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, shape:vec!(), color:vec!()};
+        let mut player_pos:actor::ActorView = actor::ActorView::empty();
         let mut player_messages = messages.clone();
 
         for &mut actor in self.get().iter(){

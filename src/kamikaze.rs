@@ -1,5 +1,6 @@
 use actor::Actor;
 use actor::ActorView;
+use actor;
 
 static PI : f32 = 3.14159265359;
 
@@ -74,13 +75,14 @@ impl Actor for Kamikaze{
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
-            color: self.color.clone()
+            color: self.color.clone(),
+            collision_type: actor::Collide
         }
     }
 
     fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
         match message {
-            "die"                       => {
+            "collide"                       => {
                                             self.is_alive = false;
                                             output_messages.push(("explode", self.get_view().clone()));
                                         },

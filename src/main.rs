@@ -20,6 +20,7 @@ mod bullet;
 mod asteroid;
 mod kamikaze;
 mod explosion;
+mod game;
 
 // Shader sources
 // vertex shader
@@ -169,6 +170,7 @@ fn main() {
 
     // camera position
     let mut cam_pos = (0.0, 0.0);
+    let mut game = game::Game::new();
 
     let mut actors = actor_manager::ActorManager::new();
     actors.new_player();
@@ -216,7 +218,7 @@ fn main() {
 
             actors.process_messages(&mut output_messages);
 
-            generate_actors(&mut actors);
+            generate_actors(&mut actors, game.max_players());
 
 
 
@@ -233,9 +235,11 @@ fn main() {
                     }
                 }
 
+                println!(":: SCORE : {}", game.score);
+
                 println!(":::::::::::::::::::::::::::::::::::::::\n");
 
-                restart(&mut actors);
+                restart(&mut actors, &mut game);
                 
             }
 
@@ -264,9 +268,8 @@ fn main() {
     }
 }
 
-fn generate_actors(actors: &mut actor_manager::ActorManager){
-    let max_actors = 15;
-    let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, parent:0, shape:vec!(), color:vec!()};
+fn generate_actors(actors: &mut actor_manager::ActorManager, max_actors: uint){
+    let mut player_pos:actor::ActorView = actor::ActorView::empty();
 
     for &mut actor in actors.get().iter(){
         if actor.id == 1 {
@@ -295,7 +298,7 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
     }
 }
 
-fn restart(actors: &mut actor_manager::ActorManager){
+fn restart(actors: &mut actor_manager::ActorManager, game: &mut game::Game){
     let mut player_exists = false;
     for &mut actor in actors.get().iter(){
         if actor.id == 1 {
@@ -305,6 +308,7 @@ fn restart(actors: &mut actor_manager::ActorManager){
     }
 
     if !player_exists{
+        game.restart();
         actors.restart();
     }
 }
@@ -323,14 +327,16 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 || a2.id    == 0
                 || a1.id    == a2.id
                 || a1.id    == a2.parent
-                || a2.id    == a1.parent {
+                || a2.id    == a1.parent
+                || a1.collision_type == actor::Ignore
+                || a2.collision_type == actor::Ignore {
                 continue;
             }
 
             let d = 100.0;
             
             if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
-                messages.push((a1.id, "die"));
+                messages.push((a1.id, "collide"));
             }
         }
     }

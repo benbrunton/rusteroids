@@ -1,5 +1,6 @@
 use actor::Actor;
 use actor::ActorView;
+use actor;
 
 static PI : f32 = 3.14159265359;
 
@@ -193,7 +194,8 @@ impl Actor for Spaceship{
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
-            color: self.color.clone()
+            color: self.color.clone(),
+            collision_type: actor::Collide
         }
     }
 
@@ -213,7 +215,7 @@ impl Actor for Spaceship{
                                                 self.fire_countdown = 20;
                                             }
                                         },
-            "die"                       => {
+            "collide"                       => {
                                             if !self.shield {
                                                 self.is_alive = false;
                                                 output_messages.push(("explode", self.get_view().clone()));

@@ -1,5 +1,6 @@
 use actor::Actor;
 use actor::ActorView;
+use actor;
 
 static PI : f32 = 3.14159265359;
 
@@ -88,7 +89,8 @@ impl Actor for Explosion{
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
-            color: self.color.clone()
+            color: self.color.clone(),
+            collision_type: actor::Ignore
         }
     }
 

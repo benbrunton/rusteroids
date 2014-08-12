@@ -1,5 +1,6 @@
 use actor::Actor;
 use actor::ActorView;
+use actor;
 
 static PI : f32 = 3.14159265359;
 
@@ -67,13 +68,14 @@ impl Actor for Bullet{
             height: 1, 
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
-            color: self.color.clone()
+            color: self.color.clone(),
+            collision_type: actor::Collide
         }
     }
 
     fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
         match message {
-            "die"                       => self.is_alive = false,
+            "collide"                       => self.is_alive = false,
             _                           => ()
         };
     }
