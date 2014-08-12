@@ -18,16 +18,26 @@ pub struct Asteroid{
 impl Asteroid{
     pub fn new(id: i32, x: i32, y: i32) -> Asteroid { 
         let shape = vec!(
-            -0.05,  0.05,
-            -0.05,   -0.05,
-            0.05,   -0.05,
+            -0.02,  0.05,
+            0.02,   0.05,
+            0.05,   0.0,
 
-            0.05,   -0.05,
-            0.05,    0.05,
-            -0.05,   0.05
+            0.05,   0.00,
+            0.02,  -0.05,
+            -0.02, -0.05,
+
+            -0.02, -0.05,
+            -0.05,  0.00,
+            -0.02,  0.05,
+
+            -0.02,  0.05,
+             0.05,  0.00,
+             -0.02, -0.05
+
+
         );
 
-        let color = vec!(0.2, 0.2, 0.3);
+        let color = vec!(0.4, 0.4, 0.4);
         Asteroid{
             id: id, x: x as f32, y: y as f32,
             rotation: 0.0,
@@ -59,9 +69,12 @@ impl Actor for Asteroid{
         }
     }
 
-    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
         match message {
-            "die"                       => self.is_alive = false,
+            "die"                       => {
+                                            self.is_alive = false;
+                                            output_messages.push(("explode", self.get_view().clone()));
+                                        },
             _                           => ()
         };
     }

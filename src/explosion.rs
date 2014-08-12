@@ -10,31 +10,31 @@ pub struct Explosion{
     x: f32,
     y: f32,
     rotation: f32,
-    shape: Vec<f32>,
     is_alive:bool,
     color: Vec<f32>,
+    shape: Vec<f32>,
     age: i32
 }
 
 impl Explosion{
-    pub fn new(x: i32, y: i32) -> Explosion { 
-        let shape = vec!(
-            -0.05,  0.05,
-            -0.05,   -0.05,
-            0.05,   -0.05,
+    pub fn new(x: i32, y: i32) -> Explosion {
 
-            0.05,   -0.05,
-            0.05,    0.05,
-            -0.05,   0.05
+        let shape = vec!(
+            0.0,  0.02,
+            0.02, 0.0,
+            0.0, -0.02,
+            0.0, -0.02,
+           -0.02, 0.0,
+            0.0,  0.02
         );
 
         let color = vec!(0.9, 0.9, 0.9);
         Explosion{
             id: 0, x: x as f32, y: y as f32,
             rotation: 0.0,
-            shape: shape,
             is_alive: true,
             color: color,
+            shape: shape,
             age: 0
         }
     }
@@ -46,12 +46,39 @@ impl Actor for Explosion{
     fn update(&mut self){
         self.age += 1;
 
-        if self.age > 30{
+        if self.age > 15 {
+            self.color = vec!(0.7, 0.7, 0.7);
+            self.shape = vec!(
+                0.0,  0.04,
+                0.04, 0.0,
+                0.0,  -0.04,
+
+                0.0,   -0.04,
+                -0.04,    0.0,
+                0.0,   0.04
+            );
+
+            
+        }else if self.age > 10 {
+            self.color = vec!(0.9, 0.9, 0.4);
+            self.shape = vec!(
+                -0.05,  0.05,
+                -0.05,   -0.05,
+                0.05,   -0.05,
+
+                0.05,   -0.05,
+                0.05,    0.05,
+                -0.05,   0.05
+            );
+        }
+
+        if self.age > 27{
             self.is_alive = false;
         }
     }
 
     fn get_view(&self) -> ActorView {
+
         ActorView {
             id: self.id,
             parent: 0,

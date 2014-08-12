@@ -60,11 +60,11 @@ impl ActorManager {
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
 
         for &(msg, ref v) in output_messages.iter(){
-            println!("{} : {}", msg, v);
+            //println!("{} : {}", msg, v);
             match msg{
                 "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
                 //"enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
-                "explode" => self.add_explosion(v.id, v.x as i32, v.y as i32),
+                "explode" => self.add_explosion(v.x as i32, v.y as i32),
                 _       => ()
             }
         }
@@ -113,7 +113,7 @@ impl ActorManager {
         self.bullets.push(bullet);
     }
 
-    fn add_explosion(&mut self, parent:i32, x:i32, y:i32){
+    fn add_explosion(&mut self, x:i32, y:i32){
         let expl = explosion::Explosion::new(x, y);
         self.explosions.push(expl);
     }

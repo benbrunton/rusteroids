@@ -200,23 +200,11 @@ fn main() {
                 handle_window_event(&window, event, &mut messages);
             }
 
-            // let acs = actors.get();
-            // for &actor in acs.iter(){
-            //     if actor.t == 1 {
-            //         messages.push((actor.id, "begin_increase_throttle"));
-            //     }
-
-            //     if actor.t == 2 {
-            //         messages.push((actor.id, "begin_increase_throttle"));   
-            //     }
-            // }
-
 
             calculate_collisions(&actors, &mut messages);
 
 
             let mut output_messages = vec!();
-
             actors.update(messages, &mut output_messages);
 
             draw_scene(&actors, loc, cam, color, &window);
@@ -224,8 +212,6 @@ fn main() {
             actors.process_messages(&mut output_messages);
 
             generate_actors(&mut actors);
-
-
 
 
 
@@ -399,8 +385,7 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, colo
 
     let mut cx:f32 = 0.0;
     let mut cy:f32 = 0.0;
-
-    // Clear the screen to black
+    
     gl::ClearColor(0.2, 0.2, 0.4, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
@@ -433,5 +418,6 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f3
 
     
     // Draw a triangle from the 3 vertices
-    gl::DrawArrays(gl::TRIANGLE_STRIP, 0, p.shape.len() as i32 / 2);
+    // LINE_LOOP
+    gl::DrawArrays(gl::TRIANGLES, 0, p.shape.len() as i32 / 2);
 }

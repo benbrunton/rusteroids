@@ -78,9 +78,12 @@ impl Actor for Kamikaze{
         }
     }
 
-    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
         match message {
-            "die"                       => self.is_alive = false,
+            "die"                       => {
+                                            self.is_alive = false;
+                                            output_messages.push(("explode", self.get_view().clone()));
+                                        },
             _                           => ()
         };
     }
