@@ -1,12 +1,34 @@
 [root]
-name = "hello-world"
+name = "rusteroids"
 version = "0.1.0"
 dependencies = [
- "sdl2 0.0.1 (git+https://github.com/AngryLawyer/rust-sdl2.git#182791820a1ec646e64b5b5d5c94cd98e32deba2)",
+ "gl 0.0.1 (git+https://github.com/bjz/gl-rs#57b1bb5ab5a12a83db56a303304e4cef9d45c8c8)",
+ "glfw 0.0.1 (git+https://github.com/bjz/glfw-rs#01c413ee73c751390b08d3dc008e40ef6a17ffaf)",
 ]
 
 [[package]]
-name = "sdl2"
+name = "gl"
 version = "0.0.1"
-source = "git+https://github.com/AngryLawyer/rust-sdl2.git#182791820a1ec646e64b5b5d5c94cd98e32deba2"
+source = "git+https://github.com/bjz/gl-rs#57b1bb5ab5a12a83db56a303304e4cef9d45c8c8"
+dependencies = [
+ "gl_generator 0.0.1 (git+https://github.com/bjz/gl-rs#57b1bb5ab5a12a83db56a303304e4cef9d45c8c8)",
+]
+
+[[package]]
+name = "gl_generator"
+version = "0.0.1"
+source = "git+https://github.com/bjz/gl-rs#57b1bb5ab5a12a83db56a303304e4cef9d45c8c8"
+dependencies = [
+ "sax-rs 0.0.1 (git+https://github.com/bjz/sax-rs#fa887b57b69f962f9dfd2736a3cb221cdee91f2f)",
+]
+
+[[package]]
+name = "glfw"
+version = "0.0.1"
+source = "git+https://github.com/bjz/glfw-rs#01c413ee73c751390b08d3dc008e40ef6a17ffaf"
+
+[[package]]
+name = "sax-rs"
+version = "0.0.1"
+source = "git+https://github.com/bjz/sax-rs#fa887b57b69f962f9dfd2736a3cb221cdee91f2f"
 
