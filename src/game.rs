@@ -1,3 +1,5 @@
+use actor;
+
 static max_players: uint = 15;
 
 pub struct Game{
@@ -16,5 +18,19 @@ impl Game{
 
     pub fn restart(&mut self){
         self.score = 0;
+    }
+
+    pub fn process_messages(&mut self, messages: &Vec<(&str, actor::ActorView)>){
+        for &(msg, ref v) in messages.iter(){
+            //println!("{} : {}", msg, v);
+            match msg{
+                "collect"  => {
+                    if v.id == 1 {
+                        self.score += 1
+                    }
+                },
+                _       => ()
+            }
+        }
     }
 }

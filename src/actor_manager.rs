@@ -4,6 +4,7 @@ use bullet;
 use asteroid;
 use kamikaze;
 use explosion;
+use token;
 use spaceship_agent;
 use std::rand;
 use std::rand::Rng;
@@ -15,6 +16,7 @@ pub struct ActorManager{
     asteroids: Vec<asteroid::Asteroid>,
     kamikaze: Vec<kamikaze::Kamikaze>,
     explosions: Vec<explosion::Explosion>,
+    tokens: Vec<token::Token>,
     count:i32
 }
 
@@ -26,6 +28,7 @@ impl ActorManager {
             asteroids: vec!(),
             kamikaze: vec!(),
             explosions: vec!(),
+            tokens: vec!(),
             count: 1 
         }
     }
@@ -38,6 +41,7 @@ impl ActorManager {
         all_views.push_all(ActorManager::get_views(&self.asteroids.clone()).slice_from(0));
         all_views.push_all(ActorManager::get_views(&self.kamikaze.clone()).slice_from(0));
         all_views.push_all(ActorManager::get_views(&self.explosions.clone()).slice_from(0));
+        all_views.push_all(ActorManager::get_views(&self.tokens.clone()).slice_from(0));
         all_views
     }
 
@@ -68,6 +72,7 @@ impl ActorManager {
         self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, player_messages.clone(), output_messages);
         self.kamikaze  = ActorManager::update_actor_list(player_pos.clone(), &mut self.kamikaze, player_messages.clone(), output_messages);
         self.explosions  = ActorManager::update_actor_list(player_pos.clone(), &mut self.explosions, player_messages.clone(), output_messages);
+        self.tokens  = ActorManager::update_actor_list(player_pos.clone(), &mut self.tokens, player_messages.clone(), output_messages);
     }
 
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
@@ -78,6 +83,11 @@ impl ActorManager {
                 "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
                 //"enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
                 "explode" => self.add_explosion(v.x as i32, v.y as i32),
+                "collect" => {
+                    if v.id == 1{
+                        self.new_token();
+                    }
+                },
                 _       => ()
             }
         }
@@ -90,6 +100,14 @@ impl ActorManager {
         self.spaceships.push(p);
     }
 
+    pub fn new_token(&mut self){
+        self.count += 1;
+        let id = self.count;
+        let x = rand::task_rng().gen_range(-1000i32, 1000);
+        let y = rand::task_rng().gen_range(-1000i32, 1000);
+        self.tokens = vec!(token::Token::new(id, x, y));
+    }
+
     pub fn restart(&mut self){
         self.spaceships = vec!();
         self.bullets = vec!();
@@ -97,6 +115,7 @@ impl ActorManager {
         self.kamikaze = vec!();
         self.explosions = vec!();
         self.new_player();
+        self.new_token();
     }
 
     pub fn new_spaceship(&mut self, x: i32, y:i32){

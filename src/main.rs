@@ -20,6 +20,7 @@ mod bullet;
 mod asteroid;
 mod kamikaze;
 mod explosion;
+mod token;
 mod game;
 
 // Shader sources
@@ -173,7 +174,7 @@ fn main() {
     let mut game = game::Game::new();
 
     let mut actors = actor_manager::ActorManager::new();
-    actors.new_player();
+    actors.restart();
     
     while !window.should_close() {
 
@@ -217,6 +218,7 @@ fn main() {
             draw_scene(&actors, loc, cam, color, cam_pos, &window);
 
             actors.process_messages(&mut output_messages);
+            game.process_messages(&output_messages);
 
             generate_actors(&mut actors, game.max_players());
 
@@ -231,7 +233,12 @@ fn main() {
                     if actor.id == 1 {
                         println!("> x  :: {}", actor.x);
                         println!("> y  :: {}", actor.y);
-                        break;
+                    }
+
+                    if actor.collision_type == actor::Collect {
+                        println!("-- collect --");
+                        println!("> x  :: {}", actor.x);
+                        println!("> y  :: {}", actor.y);
                     }
                 }
 
@@ -334,9 +341,14 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
             }
 
             let d = 100.0;
-            
+
             if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
-                messages.push((a1.id, "collide"));
+                match a2.collision_type{
+                    actor::Collide => messages.push((a1.id, "collide")),
+                    actor::Collect => messages.push((a1.id, "collect")),
+                    _              => ()
+                }
+                
             }
         }
     }

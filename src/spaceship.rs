@@ -215,12 +215,13 @@ impl Actor for Spaceship{
                                                 self.fire_countdown = 20;
                                             }
                                         },
-            "collide"                       => {
+            "collide"                   => {
                                             if !self.shield {
                                                 self.is_alive = false;
                                                 output_messages.push(("explode", self.get_view().clone()));
                                             }
                                         },
+            "collect"                   => output_messages.push(("collect", self.get_view().clone())),
             "shield_up"                 => self.shield_up(),
             "shield_down"               => self.shield_down(),
             _                           => ()
