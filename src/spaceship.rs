@@ -18,15 +18,23 @@ pub struct Spaceship{
     shape: Vec<f32>,
     acc: f32,
     is_alive:bool,
-    color: Vec<f32>
+    color: Vec<f32>,
+    shield: bool,
+    normal_color : Vec<f32>,
+    normal_shape : Vec<f32>,
+    fire_countdown: i32
 }
 
 impl Spaceship{
     pub fn new(id: i32, x: i32, y: i32, rotation: f32) -> Spaceship { 
         let shape = vec!(
-            0.0,  0.05,
+            0.0, 0.05,
             0.025, -0.05,
-            -0.025, -0.05
+            0.0, -0.025,
+
+            0.0, -0.025,
+            -0.025, -0.05,
+            0.0, 0.05
         );
 
         let acc = 1.05;
@@ -38,11 +46,20 @@ impl Spaceship{
             rotation: rotation, accX: 0.0, accY: 0.0,
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false,
-            shape: shape,
+            shape: shape.clone(),
+            normal_shape: shape.clone(),
             acc: acc,
             is_alive: true,
-            color: color
+            color: color.clone(),
+            normal_color: color.clone(),
+            shield: false,
+            fire_countdown: 0
         }
+    }
+
+    pub fn set_color(&mut self, c: Vec<f32>){
+        self.normal_color = c.clone();
+        self.color = c;
     }
 
     fn begin_increase_throttle(&mut self){
@@ -113,6 +130,26 @@ impl Spaceship{
         let r = (self.rotation * PI) / 180.0;
         (r.sin(), r.cos())
     }
+
+    fn shield_up(&mut self){
+        self.shield = true;
+        self.color = vec!(0.75, 0.85, 0.5);
+        self.shape = vec!(
+            0.0, 0.05,
+            0.04, -0.05,
+            0.0, -0.03,
+
+            0.0, -0.03,
+            -0.04, -0.05,
+            0.0, 0.05
+        );
+    }
+
+    fn shield_down(&mut self){
+        self.shield = false;
+        self.color = self.normal_color.clone();
+        self.shape = self.normal_shape.clone();
+    }
 }
 
 
@@ -139,6 +176,10 @@ impl Actor for Spaceship{
         self.x += self.accX;
 
         self.slow_down();
+
+        if self.fire_countdown > 0 {
+            self.fire_countdown -= 1;
+        }
 
     }
 
@@ -167,12 +208,19 @@ impl Actor for Spaceship{
             "stop_rotate_right"         => self.stop_rotate_right(),
             "stop_rotate_left"          => self.stop_rotate_left(),
             "fire"                      => {
-                                            output_messages.push(("fire", self.get_view().clone()));
+                                            if self.fire_countdown == 0{
+                                                output_messages.push(("fire", self.get_view().clone()));
+                                                self.fire_countdown = 20;
+                                            }
                                         },
             "die"                       => {
-                                            self.is_alive = false;
-                                            output_messages.push(("explode", self.get_view().clone()));
+                                            if !self.shield {
+                                                self.is_alive = false;
+                                                output_messages.push(("explode", self.get_view().clone()));
+                                            }
                                         },
+            "shield_up"                 => self.shield_up(),
+            "shield_down"               => self.shield_down(),
             _                           => ()
         };
     }

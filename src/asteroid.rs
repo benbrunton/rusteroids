@@ -47,7 +47,7 @@ impl Asteroid{
 
         );
 
-        let color = vec!(0.4, 0.4, 0.4);
+        let color = vec!(0.4, 0.3, 0.3);
         Asteroid{
             id: id, x: x as f32, y: y as f32,
             rotation: 0.0,

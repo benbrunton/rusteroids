@@ -15,6 +15,7 @@ use std::rand::Rng;
 mod actor;
 mod actor_manager;
 mod spaceship;
+mod spaceship_agent;
 mod bullet;
 mod asteroid;
 mod kamikaze;
@@ -224,18 +225,15 @@ fn main() {
             if t3.sec > inner_t.sec + 1 {
                 inner_t = t3;
                 println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
-                println!("# of actors : {}", actors.get().len());
                 for &actor in actors.get().iter(){
                     if actor.id == 1 {
-
-                        println!("Player::");
-                        println!(":: x  :: {}", actor.x);
-                        println!(":: y  :: {}", actor.y);
+                        println!("> x  :: {}", actor.x);
+                        println!("> y  :: {}", actor.y);
                         break;
                     }
                 }
 
-                println!("::  {}s  ::::::::::::::::::::::::::::::\n", t3.sec - global_time.sec);
+                println!(":::::::::::::::::::::::::::::::::::::::\n");
 
                 restart(&mut actors);
                 
@@ -267,7 +265,7 @@ fn main() {
 }
 
 fn generate_actors(actors: &mut actor_manager::ActorManager){
-    let max_actors = 30;
+    let max_actors = 15;
     let mut player_pos:actor::ActorView = actor::ActorView{id:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, parent:0, shape:vec!(), color:vec!()};
 
     for &mut actor in actors.get().iter(){
@@ -289,8 +287,8 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
             let rand = std::rand::task_rng().gen_range(0u32, 100);
             match rand {
                 0..65  => actors.new_asteroid(x, y),
-                66..79 => actors.new_spaceship(x, y, 0.0),
-                80..89 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
+                66..82 => actors.new_spaceship(x, y),
+                83..85 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
                 _      => ()
             }
         }
@@ -369,6 +367,8 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
                 (glfw::KeyRight, glfw::Release) => messages.push((1, "stop_rotate_right")),
                 (glfw::KeyLeft, glfw::Release) => messages.push((1, "stop_rotate_left")),
                 (glfw::KeySpace, glfw::Release) => messages.push((1, "fire")),
+                (glfw::KeyLeftShift, glfw::Press) => messages.push((1, "shield_up")),
+                (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();
@@ -398,7 +398,7 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, colo
 
     let actors = actor_manager.get();
 
-    gl::ClearColor(0.2, 0.2, 0.4, 1.0);
+    gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
     for &v in actors.iter() {

@@ -25,7 +25,7 @@ impl Kamikaze{
             -0.024, -0.06
         );
 
-        let color = vec!(0.2, 0.2, 0.8);
+        let color = vec!(0.15, 0.15, 0.5);
         let acc = 1.01;
         let dx = targetX - x as f32;
         let dy = targetY - y as f32;

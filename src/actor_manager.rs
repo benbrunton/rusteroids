@@ -4,6 +4,9 @@ use bullet;
 use asteroid;
 use kamikaze;
 use explosion;
+use spaceship_agent;
+use std::rand;
+use std::rand::Rng;
 
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorManager{
@@ -42,6 +45,7 @@ impl ActorManager {
 
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
         let mut player_pos:actor::ActorView = actor::ActorView{id:0,parent:0, x:0.0, y:0.0, width:0, height:0, rotation:0.0, shape:vec!(), color:vec!()};
+        let mut player_messages = messages.clone();
 
         for &mut actor in self.get().iter(){
             if actor.id == 1 {
@@ -50,11 +54,20 @@ impl ActorManager {
             }
         }
 
-        self.spaceships = ActorManager::update_actor_list(player_pos.clone(), &mut self.spaceships, messages.clone(), output_messages);
-        self.bullets    = ActorManager::update_actor_list(player_pos.clone(), &mut self.bullets, messages.clone(), output_messages);
-        self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, messages.clone(), output_messages);
-        self.kamikaze  = ActorManager::update_actor_list(player_pos.clone(), &mut self.kamikaze, messages.clone(), output_messages);
-        self.explosions  = ActorManager::update_actor_list(player_pos.clone(), &mut self.explosions, messages.clone(), output_messages);
+        for &ship in ActorManager::get_views(&self.spaceships.clone()).iter(){
+            if ship.id == 1 {
+                // forget about the player
+                continue;
+            }
+            let nearest = self.get_nearest(&ship);
+            spaceship_agent::set_instructions(ship, nearest, &mut player_messages);
+        }
+
+        self.spaceships = ActorManager::update_actor_list(player_pos.clone(), &mut self.spaceships, player_messages.clone(), output_messages);
+        self.bullets    = ActorManager::update_actor_list(player_pos.clone(), &mut self.bullets, player_messages.clone(), output_messages);
+        self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, player_messages.clone(), output_messages);
+        self.kamikaze  = ActorManager::update_actor_list(player_pos.clone(), &mut self.kamikaze, player_messages.clone(), output_messages);
+        self.explosions  = ActorManager::update_actor_list(player_pos.clone(), &mut self.explosions, player_messages.clone(), output_messages);
     }
 
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
@@ -72,7 +85,8 @@ impl ActorManager {
     }
 
     pub fn new_player(&mut self){
-        let p = spaceship::Spaceship::new(1, 0, 0, 0.0);
+        let mut p = spaceship::Spaceship::new(1, 0, 0, 0.0);
+        p.set_color(vec!(0.7, 0.7, 0.77));
         self.spaceships.push(p);
     }
 
@@ -85,9 +99,10 @@ impl ActorManager {
         self.new_player();
     }
 
-    pub fn new_spaceship(&mut self, x: i32, y:i32, r: f32){
+    pub fn new_spaceship(&mut self, x: i32, y:i32){
         self.count += 1;
         let id = self.count;
+        let r = rand::task_rng().gen_range(0.0f32, 360.0);
         let ship = spaceship::Spaceship::new(id, x, y, r);
         self.spaceships.push(ship);
     }
@@ -116,6 +131,25 @@ impl ActorManager {
     fn add_explosion(&mut self, x:i32, y:i32){
         let expl = explosion::Explosion::new(x, y);
         self.explosions.push(expl);
+    }
+
+    fn get_nearest(&self, actor: &actor::ActorView) -> Vec<actor::ActorView>{
+        let mut nearest = vec!();
+
+        for &enemy in self.get().iter(){
+            if enemy.id == actor.id {
+                continue;
+            }
+
+            let max_distance = 2000.0;
+            let dx = enemy.x - actor.x;
+            let dy = enemy.y - actor.y;
+            let distance = (dx * dx + dy * dy).sqrt();
+            if distance < max_distance{
+                nearest.push(enemy.clone());
+            }
+        }
+        nearest
     }
 
     fn update_actor_list<T: actor::Actor>(player_pos:actor::ActorView, 
