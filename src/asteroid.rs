@@ -1,5 +1,7 @@
 use actor::Actor;
 use actor::ActorView;
+use std::rand;
+use std::rand::Rng;
 
 static PI : f32 = 3.14159265359;
 
@@ -12,11 +14,19 @@ pub struct Asteroid{
     rotation: f32,
     shape: Vec<f32>,
     is_alive:bool,
-    color: Vec<f32>
+    color: Vec<f32>,
+    r_speed: f32,
+    vx: f32,
+    vy: f32
 }
 
 impl Asteroid{
-    pub fn new(id: i32, x: i32, y: i32) -> Asteroid { 
+    pub fn new(id: i32, x: i32, y: i32) -> Asteroid {
+
+        let r = rand::task_rng().gen_range(-5.0f32, 5.0);
+        let vx = rand::task_rng().gen_range(-30.0f32, 30.0);
+        let vy = rand::task_rng().gen_range(-30.0f32, 30.0);
+
         let shape = vec!(
             -0.02,  0.05,
             0.02,   0.05,
@@ -43,7 +53,10 @@ impl Asteroid{
             rotation: 0.0,
             shape: shape,
             is_alive: true,
-            color: color
+            color: color,
+            r_speed: r,
+            vx: vx,
+            vy: vy
         }
     }
 }
@@ -52,7 +65,9 @@ impl Asteroid{
 impl Actor for Asteroid{
     
     fn update(&mut self){
-        
+        self.x += self.vx;
+        self.y += self.vy;
+        self.rotation += self.r_speed;
     }
 
     fn get_view(&self) -> ActorView {

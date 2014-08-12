@@ -166,6 +166,8 @@ fn main() {
     let mut inner_t = time::get_time();
     let fr:i32 = 100000000 / 60;
 
+    // camera position
+    let mut cam_pos = (0.0, 0.0);
 
     let mut actors = actor_manager::ActorManager::new();
     actors.new_player();
@@ -207,7 +209,9 @@ fn main() {
             let mut output_messages = vec!();
             actors.update(messages, &mut output_messages);
 
-            draw_scene(&actors, loc, cam, color, &window);
+            cam_pos = get_camera(&actors, cam_pos);
+
+            draw_scene(&actors, loc, cam, color, cam_pos, &window);
 
             actors.process_messages(&mut output_messages);
 
@@ -215,9 +219,9 @@ fn main() {
 
 
 
-            // every second
+            // every 2 seconds
             let t3 = time::get_time();
-            if t3.sec > inner_t.sec {
+            if t3.sec > inner_t.sec + 1 {
                 inner_t = t3;
                 println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
                 println!("# of actors : {}", actors.get().len());
@@ -284,8 +288,8 @@ fn generate_actors(actors: &mut actor_manager::ActorManager){
         if distance > 2600.0{
             let rand = std::rand::task_rng().gen_range(0u32, 100);
             match rand {
-                0..50  => actors.new_asteroid(x, y),
-                51..79 => actors.new_spaceship(x, y, 0.0),
+                0..65  => actors.new_asteroid(x, y),
+                66..79 => actors.new_spaceship(x, y, 0.0),
                 80..89 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
                 _      => ()
             }
@@ -379,21 +383,25 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
     }
 }
 
-fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, window: &glfw::Window){
+fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) -> (f32, f32){
+    let actors = actor_manager.get();
+    for &v in actors.iter() {
+        if v.id == 1 {
+            return (v.x, v.y);
+        }
+    }
+
+    (cx, cy)
+}
+
+fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, (cx, cy):(f32, f32), window: &glfw::Window){
 
     let actors = actor_manager.get();
 
-    let mut cx:f32 = 0.0;
-    let mut cy:f32 = 0.0;
-    
     gl::ClearColor(0.2, 0.2, 0.4, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
     for &v in actors.iter() {
-        if v.id == 1 {
-            cx = v.x;
-            cy = v.y;
-        }
 
         draw_actor(&v, loc, cam, color, cx, cy);
     }
