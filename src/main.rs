@@ -298,8 +298,8 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32
         if distance > 2600.0{
             let rand = std::rand::task_rng().gen_range(0u32, 100);
             match rand {
-                0..65  => actors.new_asteroid(x, y),
-                66..82 => actors.new_spaceship(x, y),
+                0..75  => actors.new_asteroid(x, y),
+                76..82 => actors.new_spaceship(x, y),
                 83..85 => actors.new_kamikaze(x, y, (cx, cy)),
                 _      => ()
             }
@@ -343,9 +343,8 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 continue;
             }
 
-            let d = 100.0;
-
-            if a1.x + d > a2.x && a1.x - d < a2.x && a1.y + d > a2.y && a1.y - d < a2.y {
+            if a1.x + a1.width > a2.x - a2.width && a1.x - a1.width < a2.x + a2.width 
+              && a1.y + a1.height > a2.y - a2.height && a1.y - a1.height < a2.y + a2.height {
                 match a2.collision_type{
                     actor::Collide => messages.push((a1.id, "collide")),
                     actor::Collect => messages.push((a1.id, "collect")),
