@@ -6,3 +6,10 @@
 - gflw
 - rust
 - cargo
+
+## Playing
+    cargo run
+
+arrow keys to move
+spacebar to fire
+hold shift for shield
