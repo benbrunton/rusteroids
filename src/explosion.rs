@@ -14,19 +14,21 @@ pub struct Explosion{
     is_alive:bool,
     color: Vec<f32>,
     shape: Vec<f32>,
+    size: f32,
     age: i32
 }
 
 impl Explosion{
-    pub fn new(x: i32, y: i32) -> Explosion {
+    pub fn new(x: i32, y: i32, d: i32) -> Explosion {
 
+        let size = d as f32 / 2000.0;
         let shape = vec!(
-            0.0,  0.02,
-            0.02, 0.0,
-            0.0, -0.02,
-            0.0, -0.02,
-           -0.02, 0.0,
-            0.0,  0.02
+            0.0,  size,
+            size, 0.0,
+            0.0, -size,
+            0.0, -size,
+           -size, 0.0,
+            0.0,  size
         );
 
         let color = vec!(0.9, 0.9, 0.9);
@@ -36,7 +38,8 @@ impl Explosion{
             is_alive: true,
             color: color,
             shape: shape,
-            age: 0
+            age: 0,
+            size: size
         }
     }
 }
@@ -48,28 +51,30 @@ impl Actor for Explosion{
         self.age += 1;
 
         if self.age > 15 {
+            let s = self.size * 1.5;
             self.color = vec!(0.7, 0.7, 0.7);
             self.shape = vec!(
-                0.0,  0.04,
-                0.04, 0.0,
-                0.0,  -0.04,
+                0.0,  s,
+                s, 0.0,
+                0.0,  -s,
 
-                0.0,   -0.04,
-                -0.04,    0.0,
-                0.0,   0.04
+                0.0,   -s,
+                -s,    0.0,
+                0.0,   s
             );
 
             
         }else if self.age > 10 {
+            let s = self.size * 2.0;
             self.color = vec!(0.9, 0.9, 0.4);
             self.shape = vec!(
-                -0.05,  0.05,
-                -0.05,   -0.05,
-                0.05,   -0.05,
+                -s,  s,
+                -s,   -s,
+                s,   -s,
 
-                0.05,   -0.05,
-                0.05,    0.05,
-                -0.05,   0.05
+                s,   -s,
+                s,    s,
+                -s,   s
             );
         }
 

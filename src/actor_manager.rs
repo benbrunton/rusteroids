@@ -87,7 +87,7 @@ impl ActorManager {
             match msg{
                 "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
                 //"enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
-                "explode" => self.add_explosion(v.x as i32, v.y as i32),
+                "explode" => self.add_explosion(v.x as i32, v.y as i32, (v.width + v.height) as i32 / 2),
                 "new_asteroid" => self.split_asteroid(v),
                 "collect" => {
                     if v.id == 1{
@@ -165,8 +165,8 @@ impl ActorManager {
         self.bullets.push(bullet);
     }
 
-    fn add_explosion(&mut self, x:i32, y:i32){
-        let expl = explosion::Explosion::new(x, y);
+    fn add_explosion(&mut self, x:i32, y:i32, d:i32){
+        let expl = explosion::Explosion::new(x, y,  d);
         self.explosions.push(expl);
     }
 
