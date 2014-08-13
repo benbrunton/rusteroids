@@ -25,7 +25,9 @@ pub struct Spaceship{
     normal_shape : Vec<f32>,
     fire_countdown: i32,
     shield_timer: uint,
-    shield_max_time: uint
+    shield_max_time: uint,
+    secondary_shape: Vec<f32>,
+    secondary_color: Vec<f32>
 }
 
 impl Spaceship{
@@ -39,6 +41,18 @@ impl Spaceship{
             -0.025, -0.05,
             0.0, 0.05
         );
+
+        let secondary_shape = vec!(
+            0.0, -0.025,
+            0.015, -0.04,
+            0.0,  -0.07,
+
+            0.0, -0.07,
+            -0.015, -0.04,
+            0.0, -0.025
+        );
+
+        let secondary_color = vec!(1.0, 1.0, 0.7);
 
         let acc = 1.05;
 
@@ -58,7 +72,9 @@ impl Spaceship{
             shield: false,
             fire_countdown: 0,
             shield_timer: 100,
-            shield_max_time: 100
+            shield_max_time: 100,
+            secondary_color: secondary_color,
+            secondary_shape: secondary_shape
         }
     }
 
@@ -214,7 +230,10 @@ impl Actor for Spaceship{
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
-            collision_type: actor::Collide
+            collision_type: actor::Collide,
+            show_secondary: self.is_accelerating,
+            secondary_shape: Some(self.secondary_shape.clone()),
+            secondary_color: Some(self.secondary_color.clone())
         }
     }
 

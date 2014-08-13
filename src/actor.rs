@@ -19,7 +19,10 @@ pub struct ActorView{
     pub rotation: f32,
     pub shape: Vec<f32>,
     pub color: Vec<f32>,
-    pub collision_type: CollisionType
+    pub collision_type: CollisionType,
+    pub show_secondary: bool,
+    pub secondary_shape: Option<Vec<f32>>,
+    pub secondary_color: Option<Vec<f32>>
 }
 
 impl ActorView{
@@ -34,7 +37,10 @@ impl ActorView{
             rotation:0.0, 
             shape:vec!(), 
             color:vec!(),
-            collision_type: Ignore
+            collision_type: Ignore,
+            show_secondary: false,
+            secondary_shape: None,
+            secondary_color: None
         }
     }
 }

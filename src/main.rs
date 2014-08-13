@@ -440,7 +440,14 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, colo
 
 fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f32){
 
-    draw(&p.shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &p.color)
+    draw(&p.shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &p.color);
+    if p.show_secondary {
+        match (p.secondary_shape.clone(), p.secondary_color.clone()) {
+            (Some(shape), Some(second_color)) => draw(&shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &second_color),
+            _                        => ()
+        }
+        
+    }
 }
 
 fn draw_hud(loc:i32, cam:i32, color:i32, player:actor::ActorView, collectables : Vec<actor::ActorView>){
@@ -492,7 +499,7 @@ fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, x:f32, y:f32, rotation:f32, c
         gl::Uniform3f(color, col[0], col[1], col[2]);
     }
 
-    // LINE_LOOP
+    // LINE_LOOP / TRIANGLES
     gl::DrawArrays(gl::TRIANGLES, 0, v.len() as i32 / 2);
     // unsafe {
     //     gl::DrawElements(gl::TRIANGLES, v.len() as GLsizei,

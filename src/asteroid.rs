@@ -90,7 +90,10 @@ impl Actor for Asteroid{
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
-            collision_type: actor::Collide
+            collision_type: actor::Collide,
+            show_secondary: false,
+            secondary_shape: None,
+            secondary_color: None
         }
     }
 
