@@ -1,6 +1,8 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
+use std::rand;
+use std::rand::Rng;
 
 static PI : f32 = 3.14159265359;
 
@@ -27,7 +29,10 @@ pub struct Spaceship{
     shield_timer: uint,
     shield_max_time: uint,
     secondary_shape: Vec<f32>,
-    secondary_color: Vec<f32>
+    secondary_shape_1: Vec<f32>,
+    secondary_shape_2: Vec<f32>,
+    secondary_color: Vec<f32>,
+    thrust_timer: uint
 }
 
 impl Spaceship{
@@ -49,6 +54,16 @@ impl Spaceship{
 
             0.0, -0.07,
             -0.015, -0.04,
+            0.0, -0.025
+        );
+
+        let secondary_shape2 = vec!(
+            0.0, -0.025,
+            0.012, -0.03,
+            0.0,  -0.04,
+
+            0.0, -0.04,
+            -0.012, -0.03,
             0.0, -0.025
         );
 
@@ -74,7 +89,10 @@ impl Spaceship{
             shield_timer: 100,
             shield_max_time: 100,
             secondary_color: secondary_color,
-            secondary_shape: secondary_shape
+            secondary_shape: secondary_shape.clone(),
+            secondary_shape_1: secondary_shape.clone(),
+            secondary_shape_2: secondary_shape2,
+            thrust_timer: 0
         }
     }
 
@@ -85,9 +103,12 @@ impl Spaceship{
 
     fn begin_increase_throttle(&mut self){
         self.is_accelerating = true;
+        self.secondary_shape = self.secondary_shape_1.clone();
+        self.thrust_timer = 0;
     }
     fn stop_increase_throttle(&mut self){
         self.is_accelerating = false;
+        self.secondary_shape = self.secondary_shape_2.clone();
     }
 
     fn begin_decrease_throttle(&mut self){
@@ -184,6 +205,11 @@ impl Actor for Spaceship{
     fn update(&mut self){
         if self.is_accelerating {
             self.accelerate();
+            let r1 = rand::task_rng().gen_range(0.8f32, 1.0);
+            let r2 = rand::task_rng().gen_range(0.0f32, 1.0);
+            self.secondary_color = vec!(r1, r1, r2);
+        }else {
+            self.thrust_timer += 1;
         }
 
         if self.is_decelerating{
@@ -231,7 +257,7 @@ impl Actor for Spaceship{
             shape: self.shape.clone(),
             color: self.color.clone(),
             collision_type: actor::Collide,
-            show_secondary: self.is_accelerating,
+            show_secondary: self.is_accelerating || self.thrust_timer < 5,
             secondary_shape: Some(self.secondary_shape.clone()),
             secondary_color: Some(self.secondary_color.clone())
         }
