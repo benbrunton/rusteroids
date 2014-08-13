@@ -460,7 +460,7 @@ fn draw_hud(loc:i32, cam:i32, color:i32, player:actor::ActorView, collectables :
         let dx = rotation.sin();
         let dy = rotation.cos();
 
-        let mut distance = 1500;
+        let mut distance = 1800;
 
         while distance > player_distance - 100 {
             distance -= 5;

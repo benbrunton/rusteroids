@@ -23,7 +23,9 @@ pub struct Spaceship{
     shield: bool,
     normal_color : Vec<f32>,
     normal_shape : Vec<f32>,
-    fire_countdown: i32
+    fire_countdown: i32,
+    shield_timer: uint,
+    shield_max_time: uint
 }
 
 impl Spaceship{
@@ -54,7 +56,9 @@ impl Spaceship{
             color: color.clone(),
             normal_color: color.clone(),
             shield: false,
-            fire_countdown: 0
+            fire_countdown: 0,
+            shield_timer: 100,
+            shield_max_time: 100
         }
     }
 
@@ -133,6 +137,11 @@ impl Spaceship{
     }
 
     fn shield_up(&mut self){
+
+        if self.shield_timer < 1 {
+            return;
+        }
+
         self.shield = true;
         self.color = vec!(0.75, 0.85, 0.5);
         self.shape = vec!(
@@ -180,6 +189,16 @@ impl Actor for Spaceship{
 
         if self.fire_countdown > 0 {
             self.fire_countdown -= 1;
+        }
+
+        if self.shield {
+            if self.shield_timer > 0 {
+                self.shield_timer -= 1;
+            } else {
+                self.shield_down();
+            }
+        } else if self.shield_timer < self.shield_max_time {
+            self.shield_timer += 1;
         }
 
     }
