@@ -419,21 +419,17 @@ fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) ->
 fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, (cx, cy):(f32, f32), window: &glfw::Window){
 
     let actors = actor_manager.get();
-    let mut player = actor::ActorView::empty();
 
     gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
     for &v in actors.iter() {
-        if v.id == 1 {
-            player = v.clone();
-        }
         draw_actor(&v, loc, cam, color, cx, cy);
     }
 
     let collectables = actor_manager.get_collectables();
 
-    draw_hud(loc, cam, color, player, collectables);
+    draw_hud(loc, cam, color, (cx, cy), collectables);
 
     window.swap_buffers();
 }
@@ -450,7 +446,7 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f3
     }
 }
 
-fn draw_hud(loc:i32, cam:i32, color:i32, player:actor::ActorView, collectables : Vec<actor::ActorView>){
+fn draw_hud(loc:i32, cam:i32, color:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>){
     let v = vec!(
         0.0, 0.0,
         0.02, -0.02,
@@ -462,8 +458,8 @@ fn draw_hud(loc:i32, cam:i32, color:i32, player:actor::ActorView, collectables :
     );
 
     for &token in collectables.iter(){
-        let dx = token.x - player.x;
-        let dy = token.y - player.y;
+        let dx = token.x - cx;
+        let dy = token.y - cy;
         let rotation = dx.atan2(dy);
 
         let player_distance = (dx * dx + dy * dy).sqrt() as i32;

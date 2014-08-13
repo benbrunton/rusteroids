@@ -25,26 +25,6 @@ pub struct ActorView{
     pub secondary_color: Option<Vec<f32>>
 }
 
-impl ActorView{
-    pub fn empty() -> ActorView {
-        ActorView{
-            id:0,
-            parent:0, 
-            x:0.0, 
-            y:0.0, 
-            width:0.0, 
-            height:0.0, 
-            rotation:0.0, 
-            shape:vec!(), 
-            color:vec!(),
-            collision_type: Ignore,
-            show_secondary: false,
-            secondary_shape: None,
-            secondary_color: None
-        }
-    }
-}
-
 
 pub trait Actor : Show + PartialEq {
     fn update(&mut self);
