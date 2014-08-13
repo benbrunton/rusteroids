@@ -88,6 +88,7 @@ impl ActorManager {
                 "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
                 //"enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
                 "explode" => self.add_explosion(v.x as i32, v.y as i32),
+                "new_asteroid" => self.split_asteroid(v),
                 "collect" => {
                     if v.id == 1{
                         self.new_token();
@@ -135,6 +136,18 @@ impl ActorManager {
         self.count += 1;
         let id = self.count;
         let ast = asteroid::Asteroid::new(id, x, y);
+        self.asteroids.push(ast);
+    }
+
+    fn split_asteroid(&mut self, original: &actor::ActorView){
+        self.count += 1;
+        let id = self.count;
+        let d = original.width / 2.0;
+        let ast = asteroid::Asteroid::new_with_d(id, original.x as i32, original.y as i32, d, 0);
+        self.asteroids.push(ast);
+        self.count += 1;
+        let id2 = self.count;
+        let ast = asteroid::Asteroid::new_with_d(id2, original.x as i32, original.y as i32, d, id);
         self.asteroids.push(ast);
     }
 
