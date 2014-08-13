@@ -15,7 +15,7 @@ impl Game{
         }
     }
     pub fn max_players(&self)-> uint{
-        max_players + (self.score * 2)
+        max_players + (self.score * 3)
     }
 
     pub fn restart(&mut self){

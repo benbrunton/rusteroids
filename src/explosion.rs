@@ -19,7 +19,7 @@ pub struct Explosion{
 }
 
 impl Explosion{
-    pub fn new(x: i32, y: i32, d: i32) -> Explosion {
+    pub fn new(x: i32, y: i32, d: i32, r: f32) -> Explosion {
 
         let size = d as f32 / 2000.0;
         let shape = vec!(
@@ -34,7 +34,7 @@ impl Explosion{
         let color = vec!(0.9, 0.9, 0.9);
         Explosion{
             id: 0, x: x as f32, y: y as f32,
-            rotation: 0.0,
+            rotation: r,
             is_alive: true,
             color: color,
             shape: shape,
@@ -81,6 +81,8 @@ impl Actor for Explosion{
         if self.age > 27{
             self.is_alive = false;
         }
+
+        self.rotation += 1.0;
     }
 
     fn get_view(&self) -> ActorView {
@@ -92,7 +94,7 @@ impl Actor for Explosion{
             y: self.y,
             width: 0.0, 
             height: 0.0, 
-            rotation: (self.rotation * PI) / 180.0,
+            rotation: self.rotation * PI / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
             collision_type: actor::Ignore,

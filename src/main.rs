@@ -289,15 +289,21 @@ fn main() {
 
 fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32), max_actors: uint){
 
+    let minX = cx as i32 - 4000;
+    let maxX = cx as i32 + 4000;
+    let minY = cy as i32 - 4000;
+    let maxY = cy as i32 + 4000;
+    let min_distance = 2600 * 2600; // square instead of sqrt on distance
+
     while actors.get().len() < max_actors {
-        let x = std::rand::task_rng().gen_range(cx as i32 - 4000, cx as i32 + 4000);
-        let y = std::rand::task_rng().gen_range(cy as i32 - 4000, cy as i32 + 4000);
+        let x = std::rand::task_rng().gen_range(minX, maxX);
+        let y = std::rand::task_rng().gen_range(minY, maxY);
         
         let x_dis = x - cx as i32;
         let y_dis = y - cy as i32;
-        let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
+        let distance = x_dis * x_dis + y_dis * y_dis;
 
-        if distance > 2600.0{
+        if distance > min_distance {
             let rand = std::rand::task_rng().gen_range(0u32, 100);
             match rand {
                 0..75  => actors.new_asteroid(x, y),
@@ -342,6 +348,10 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 || a2.id    == a1.parent
                 || a1.collision_type == actor::Ignore
                 || a2.collision_type == actor::Ignore {
+                continue;
+            }
+
+            if (a1.x - a2.x).abs() as uint > 1000 || (a1.y - a2.y).abs() as uint > 1000 {
                 continue;
             }
 
@@ -449,8 +459,12 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f3
 fn draw_hud(loc:i32, cam:i32, color:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>){
     let v = vec!(
         0.0, 0.0,
-        0.02, -0.02,
-        -0.02, -0.02
+        0.04, -0.04,
+        0.0, -0.02,
+
+        0.0, -0.02,
+        -0.04, -0.04,
+        0.0, 0.0
     );
 
     let col = vec!(

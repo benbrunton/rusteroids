@@ -5,6 +5,7 @@ use std::rand;
 use std::rand::Rng;
 
 static PI : f32 = 3.14159265359;
+static shield_time: uint = 180;
 
 #[deriving(Show, Clone, PartialEq)]
 pub struct Spaceship{
@@ -86,8 +87,8 @@ impl Spaceship{
             normal_color: color.clone(),
             shield: false,
             fire_countdown: 0,
-            shield_timer: 100,
-            shield_max_time: 100,
+            shield_timer: shield_time,
+            shield_max_time: shield_time,
             secondary_color: secondary_color,
             secondary_shape: secondary_shape.clone(),
             secondary_shape_1: secondary_shape.clone(),
@@ -102,9 +103,9 @@ impl Spaceship{
     }
 
     fn begin_increase_throttle(&mut self){
-        self.is_accelerating = true;
-        self.secondary_shape = self.secondary_shape_1.clone();
-        self.thrust_timer = 0;
+        if !self.shield {
+            self.is_accelerating = true;
+        }
     }
     fn stop_increase_throttle(&mut self){
         self.is_accelerating = false;
@@ -136,6 +137,9 @@ impl Spaceship{
     fn accelerate(&mut self){
         let acc = self.acc;
 
+        self.secondary_shape = self.secondary_shape_1.clone();
+        self.thrust_timer = 0;
+
         let (dirx, diry) = self.get_rotate_vec();
         self.accX += acc * dirx;
         self.accY += acc * diry;
@@ -148,6 +152,27 @@ impl Spaceship{
 
         self.accX -= acc * dirx;
         self.accY -= acc * diry;
+    }
+
+    fn control(&mut self){
+        if self.is_accelerating {
+            self.accelerate();
+            let r1 = rand::task_rng().gen_range(0.8f32, 1.0);
+            let r2 = rand::task_rng().gen_range(0.0f32, 1.0);
+            self.secondary_color = vec!(r1, r1, r2);
+        }
+
+        if self.is_decelerating{
+            self.decelerate();
+        }
+
+        if self.is_rotating_left {
+            self.rotate(-1);
+        }
+
+        if self.is_rotating_right {
+            self.rotate(1);
+        }
     }
 
     fn slow_down(&mut self){
@@ -190,6 +215,11 @@ impl Spaceship{
             -0.04, -0.05,
             0.0, 0.05
         );
+
+        self.is_accelerating = false;
+        self.is_decelerating = false;
+        self.is_rotating_left = false;
+        self.is_rotating_right = false;;
     }
 
     fn shield_down(&mut self){
@@ -203,26 +233,7 @@ impl Spaceship{
 impl Actor for Spaceship{
     
     fn update(&mut self){
-        if self.is_accelerating {
-            self.accelerate();
-            let r1 = rand::task_rng().gen_range(0.8f32, 1.0);
-            let r2 = rand::task_rng().gen_range(0.0f32, 1.0);
-            self.secondary_color = vec!(r1, r1, r2);
-        }else {
-            self.thrust_timer += 1;
-        }
-
-        if self.is_decelerating{
-            self.decelerate();
-        }
-
-        if self.is_rotating_left {
-            self.rotate(-1);
-        }
-
-        if self.is_rotating_right {
-            self.rotate(1);
-        }
+        
 
         self.y += self.accY;
         self.x += self.accX;
@@ -233,15 +244,23 @@ impl Actor for Spaceship{
             self.fire_countdown -= 1;
         }
 
+        if !self.is_accelerating {
+            self.thrust_timer += 1;
+        }
+
         if self.shield {
             if self.shield_timer > 0 {
                 self.shield_timer -= 1;
             } else {
                 self.shield_down();
             }
-        } else if self.shield_timer < self.shield_max_time {
+            return;
+        }
+
+        if self.shield_timer < self.shield_max_time {
             self.shield_timer += 1;
         }
+        self.control();
 
     }
 
