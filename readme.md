@@ -1,5 +1,5 @@
 # Rusteroids
-## an asteroids clone built in Rust
+#### an asteroids clone built in Rust
 
 ## Building
 ### Requirements:
