@@ -18,7 +18,9 @@ pub struct Asteroid{
     color: Vec<f32>,
     r_speed: f32,
     vx: f32,
-    vy: f32
+    vy: f32,
+    width: f32,
+    height: f32
 }
 
 impl Asteroid{
@@ -27,23 +29,27 @@ impl Asteroid{
         let r = rand::task_rng().gen_range(-5.0f32, 5.0);
         let vx = rand::task_rng().gen_range(-30.0f32, 30.0);
         let vy = rand::task_rng().gen_range(-30.0f32, 30.0);
+        let d = rand::task_rng().gen_range(40.0f32, 180.0);
+
+        let max = d / 2000.0;
+        let min = max / 2.0;
 
         let shape = vec!(
-            -0.02,  0.05,
-            0.02,   0.05,
-            0.05,   0.0,
+            -min,  max,
+            min,   max,
+            max,   0.0,
 
-            0.05,   0.00,
-            0.02,  -0.05,
-            -0.02, -0.05,
+            max,   0.00,
+            min,  -max,
+            -min, -max,
 
-            -0.02, -0.05,
-            -0.05,  0.00,
-            -0.02,  0.05,
+            -min, -max,
+            -max,  0.00,
+            -min,  max,
 
-            -0.02,  0.05,
-             0.05,  0.00,
-             -0.02, -0.05
+            -min,  max,
+             max,  0.00,
+             -min, -max
 
 
         );
@@ -57,7 +63,9 @@ impl Asteroid{
             color: color,
             r_speed: r,
             vx: vx,
-            vy: vy
+            vy: vy,
+            width: d,
+            height: d
         }
     }
 }
@@ -77,8 +85,8 @@ impl Actor for Asteroid{
             parent: 0,
             x: self.x, 
             y: self.y,
-            width: 100.0, 
-            height: 100.0, 
+            width: self.width, 
+            height: self.height, 
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
