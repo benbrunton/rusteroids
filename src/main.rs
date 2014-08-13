@@ -415,35 +415,81 @@ fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) ->
 fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, (cx, cy):(f32, f32), window: &glfw::Window){
 
     let actors = actor_manager.get();
+    let mut player = actor::ActorView::empty();
 
     gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
 
     for &v in actors.iter() {
-
+        if v.id == 1 {
+            player = v.clone();
+        }
         draw_actor(&v, loc, cam, color, cx, cy);
     }
+
+    let collectables = actor_manager.get_collectables();
+
+    draw_hud(loc, cam, color, player, collectables);
 
     window.swap_buffers();
 }
 
 fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f32){
-    
+
+    draw(&p.shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &p.color)
+}
+
+fn draw_hud(loc:i32, cam:i32, color:i32, player:actor::ActorView, collectables : Vec<actor::ActorView>){
+    let v = vec!(
+        0.0, 0.0,
+        0.02, -0.02,
+        -0.02, -0.02
+    );
+
+    let col = vec!(
+        0.9, 0.9, 0.4
+    );
+
+    for &token in collectables.iter(){
+        let dx = token.x - player.x;
+        let dy = token.y - player.y;
+        let rotation = dx.atan2(dy);
+
+        let player_distance = (dx * dx + dy * dy).sqrt() as i32;
+
+        let dx = rotation.sin();
+        let dy = rotation.cos();
+
+        let mut distance = 1500;
+
+        while distance > player_distance - 100 {
+            distance -= 5;
+        }
+
+        let x = dx * (distance as f32);
+        let y = dy * (distance as f32);
+
+        draw(&v, loc, cam, color, x, y, rotation, 0.0, 0.0, &col);
+    }
+
+}
+
+fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, x:f32, y:f32, rotation:f32, cx:f32, cy:f32, col:&Vec<f32>){
     unsafe{
 
         gl::BufferData(gl::ARRAY_BUFFER,
-               (p.shape.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-               mem::transmute(&p.shape[0]),
+               (v.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+               mem::transmute(&v[0]),
                gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
         
-        gl::Uniform3f(loc, p.x / 2000.0, p.y / 2000.0, p.rotation);
+        gl::Uniform3f(loc, x / 2000.0, y / 2000.0, rotation);
         gl::Uniform2f(cam, cx / 2000.0, cy / 2000.0);
-        gl::Uniform3f(color, p.color[0], p.color[1], p.color[2]);
+        gl::Uniform3f(color, col[0], col[1], col[2]);
     }
 
     
     // Draw a triangle from the 3 vertices
     // LINE_LOOP
-    gl::DrawArrays(gl::TRIANGLES, 0, p.shape.len() as i32 / 2);
+    gl::DrawArrays(gl::TRIANGLES, 0, v.len() as i32 / 2);
 }

@@ -31,9 +31,7 @@ impl ActorManager {
             tokens: vec!(),
             count: 1 
         }
-    }
-
-    
+    }    
 
     pub fn get(&self) -> Vec<actor::ActorView> {
         let mut all_views = ActorManager::get_views(&self.spaceships.clone());
@@ -45,7 +43,9 @@ impl ActorManager {
         all_views
     }
 
-    
+    pub fn get_collectables(&self) -> Vec<actor::ActorView> {
+        ActorManager::get_views(&self.tokens.clone())
+    }
 
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
         let mut player_pos:actor::ActorView = actor::ActorView::empty();
@@ -103,8 +103,8 @@ impl ActorManager {
     pub fn new_token(&mut self){
         self.count += 1;
         let id = self.count;
-        let x = rand::task_rng().gen_range(-1000i32, 1000);
-        let y = rand::task_rng().gen_range(-1000i32, 1000);
+        let x = rand::task_rng().gen_range(-10000i32, 10000);
+        let y = rand::task_rng().gen_range(-10000i32, 10000);
         self.tokens = vec!(token::Token::new(id, x, y));
     }
 
@@ -179,8 +179,8 @@ impl ActorManager {
         let mut new_list = vec!();
 
         for &mut actor in list.iter() {
-            if actor.get_id() != 1{
-                let a_pos = actor.get_view();
+            let a_pos = actor.get_view();
+            if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
                 let x_distance = a_pos.x - player_pos.x;
                 let y_distance = a_pos.y - player_pos.y; 
                 let distance = (x_distance * x_distance + y_distance * y_distance).sqrt(); 

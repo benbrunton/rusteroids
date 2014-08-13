@@ -78,7 +78,7 @@ impl Actor for Token{
         }
     }
 
-    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
         match message {
             "collide"                       => {
                                             //self.is_alive = false;
