@@ -173,6 +173,7 @@ fn main() {
     let mut cam_pos = (0.0, 0.0);
     let mut game = game::Game::new();
 
+    let mut reset_countdown:uint = 3;
     let mut actors = actor_manager::ActorManager::new();
     actors.restart();
     
@@ -180,6 +181,12 @@ fn main() {
 
         // Poll events
         glfw.poll_events();
+
+        let mut messages = vec!();
+
+        for event in glfw::flush_messages(&events) {
+            handle_window_event(&window, event, &mut messages);
+        }
 
         let t2 = time::get_time();
 
@@ -200,12 +207,6 @@ fn main() {
 
             t = t2;
 
-            let mut messages = vec!();
-
-            for event in glfw::flush_messages(&events) {
-                handle_window_event(&window, event, &mut messages);
-            }
-
 
             calculate_collisions(&actors, &mut messages);
 
@@ -213,20 +214,20 @@ fn main() {
             let mut output_messages = vec!();
             actors.update(messages, &mut output_messages);
 
-            cam_pos = get_camera(&actors, cam_pos);
+            cam_pos = get_camera(&actors, cam_pos.clone());
 
-            draw_scene(&actors, loc, cam, color, cam_pos, &window);
+            draw_scene(&actors, loc, cam, color, cam_pos.clone(), &window);
 
             actors.process_messages(&mut output_messages);
             game.process_messages(&output_messages);
 
-            generate_actors(&mut actors, game.max_players());
+            generate_actors(&mut actors, cam_pos.clone(), game.max_players());
 
 
 
-            // every 2 seconds
+            // every second
             let t3 = time::get_time();
-            if t3.sec > inner_t.sec + 1 {
+            if t3.sec > inner_t.sec {
                 inner_t = t3;
                 println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
                 for &actor in actors.get().iter(){
@@ -246,7 +247,16 @@ fn main() {
 
                 println!(":::::::::::::::::::::::::::::::::::::::\n");
 
-                restart(&mut actors, &mut game);
+                if check_restart(&actors){
+
+                    if reset_countdown > 0 {
+                        reset_countdown -= 1;
+                    } else {
+                        restart(&mut actors, &mut game);
+                        reset_countdown = 3;
+                    }
+                }
+                
                 
             }
 
@@ -275,22 +285,14 @@ fn main() {
     }
 }
 
-fn generate_actors(actors: &mut actor_manager::ActorManager, max_actors: uint){
-    let mut player_pos:actor::ActorView = actor::ActorView::empty();
-
-    for &mut actor in actors.get().iter(){
-        if actor.id == 1 {
-            player_pos = actor;
-            break;
-        }
-    }
+fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32), max_actors: uint){
 
     while actors.get().len() < max_actors {
-        let x = std::rand::task_rng().gen_range(player_pos.x as i32 - 4000, player_pos.x as i32 + 4000);
-        let y = std::rand::task_rng().gen_range(player_pos.y as i32 - 4000, player_pos.y as i32 + 4000);
+        let x = std::rand::task_rng().gen_range(cx as i32 - 4000, cx as i32 + 4000);
+        let y = std::rand::task_rng().gen_range(cy as i32 - 4000, cy as i32 + 4000);
         
-        let x_dis = x - player_pos.x as i32;
-        let y_dis = y - player_pos.y as i32;
+        let x_dis = x - cx as i32;
+        let y_dis = y - cy as i32;
         let distance = ((x_dis * x_dis + y_dis * y_dis) as f32).sqrt();
 
         if distance > 2600.0{
@@ -298,26 +300,27 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, max_actors: uint){
             match rand {
                 0..65  => actors.new_asteroid(x, y),
                 66..82 => actors.new_spaceship(x, y),
-                83..85 => actors.new_kamikaze(x, y, (player_pos.x, player_pos.y)),
+                83..85 => actors.new_kamikaze(x, y, (cx, cy)),
                 _      => ()
             }
         }
     }
 }
 
-fn restart(actors: &mut actor_manager::ActorManager, game: &mut game::Game){
+fn check_restart(actors: &actor_manager::ActorManager) -> bool{
     let mut player_exists = false;
-    for &mut actor in actors.get().iter(){
+    for &actor in actors.get().iter(){
         if actor.id == 1 {
             player_exists = true;
             break;
         }
     }
+    !player_exists
+}
 
-    if !player_exists{
-        game.restart();
-        actors.restart();
-    }
+fn restart(actors: &mut actor_manager::ActorManager, game: &mut game::Game){
+    game.restart();
+    actors.restart();
 }
 
 

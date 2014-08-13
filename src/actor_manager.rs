@@ -17,7 +17,9 @@ pub struct ActorManager{
     kamikaze: Vec<kamikaze::Kamikaze>,
     explosions: Vec<explosion::Explosion>,
     tokens: Vec<token::Token>,
-    count:i32
+    count:i32,
+    px: f32,
+    py: f32
 }
 
 impl ActorManager {
@@ -29,7 +31,9 @@ impl ActorManager {
             kamikaze: vec!(),
             explosions: vec!(),
             tokens: vec!(),
-            count: 1 
+            count: 1,
+            px: 0.0,
+            py: 0.0
         }
     }    
 
@@ -48,16 +52,17 @@ impl ActorManager {
     }
 
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
-        let mut player_pos:actor::ActorView = actor::ActorView::empty();
         let mut player_messages = messages.clone();
 
         for &mut actor in self.get().iter(){
             if actor.id == 1 {
-                player_pos = actor;
+                self.px = actor.x;
+                self.py = actor.y;
                 break;
             }
         }
 
+        
         for &ship in ActorManager::get_views(&self.spaceships.clone()).iter(){
             if ship.id == 1 {
                 // forget about the player
@@ -67,12 +72,12 @@ impl ActorManager {
             spaceship_agent::set_instructions(ship, nearest, &mut player_messages);
         }
 
-        self.spaceships = ActorManager::update_actor_list(player_pos.clone(), &mut self.spaceships, player_messages.clone(), output_messages);
-        self.bullets    = ActorManager::update_actor_list(player_pos.clone(), &mut self.bullets, player_messages.clone(), output_messages);
-        self.asteroids  = ActorManager::update_actor_list(player_pos.clone(), &mut self.asteroids, player_messages.clone(), output_messages);
-        self.kamikaze  = ActorManager::update_actor_list(player_pos.clone(), &mut self.kamikaze, player_messages.clone(), output_messages);
-        self.explosions  = ActorManager::update_actor_list(player_pos.clone(), &mut self.explosions, player_messages.clone(), output_messages);
-        self.tokens  = ActorManager::update_actor_list(player_pos.clone(), &mut self.tokens, player_messages.clone(), output_messages);
+        self.spaceships = ActorManager::update_actor_list(self.px, self.py, &mut self.spaceships, player_messages.clone(), output_messages);
+        self.bullets    = ActorManager::update_actor_list(self.px, self.py, &mut self.bullets, player_messages.clone(), output_messages);
+        self.asteroids  = ActorManager::update_actor_list(self.px, self.py, &mut self.asteroids, player_messages.clone(), output_messages);
+        self.kamikaze  = ActorManager::update_actor_list(self.px, self.py, &mut self.kamikaze, player_messages.clone(), output_messages);
+        self.explosions  = ActorManager::update_actor_list(self.px, self.py, &mut self.explosions, player_messages.clone(), output_messages);
+        self.tokens  = ActorManager::update_actor_list(self.px, self.py, &mut self.tokens, player_messages.clone(), output_messages);
     }
 
     pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
@@ -171,8 +176,7 @@ impl ActorManager {
         nearest
     }
 
-    fn update_actor_list<T: actor::Actor>(player_pos:actor::ActorView, 
-                                list:&mut Vec<T>, 
+    fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>, 
                                 messages:Vec<(i32, &str)>, 
                                 output_messages:&mut Vec<(&str, actor::ActorView)>) -> Vec<T>{
         let threshold = 4000.0;
@@ -181,8 +185,8 @@ impl ActorManager {
         for &mut actor in list.iter() {
             let a_pos = actor.get_view();
             if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
-                let x_distance = a_pos.x - player_pos.x;
-                let y_distance = a_pos.y - player_pos.y; 
+                let x_distance = a_pos.x - px;
+                let y_distance = a_pos.y - py; 
                 let distance = (x_distance * x_distance + y_distance * y_distance).sqrt(); 
                 if distance > threshold{
                     actor.kill();
