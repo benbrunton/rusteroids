@@ -3,17 +3,19 @@ use actor;
 static max_players: uint = 15;
 
 pub struct Game{
-    pub score: uint
+    pub score: uint,
+    pub highscore: uint
 }
 
 impl Game{
     pub fn new() -> Game {
         Game {
-            score : 0
+            score : 0,
+            highscore: 0
         }
     }
     pub fn max_players(&self)-> uint{
-        max_players + (self.score * 2) 
+        max_players + (self.score * 2)
     }
 
     pub fn restart(&mut self){
@@ -26,7 +28,10 @@ impl Game{
             match msg{
                 "collect"  => {
                     if v.id == 1 {
-                        self.score += 1
+                        self.score += 1;
+                        if self.highscore < self.score {
+                            self.highscore = self.score;
+                        }
                     }
                 },
                 _       => ()

@@ -144,6 +144,7 @@ fn main() {
 
 
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        // gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, vbo);
 
         // Use shader program
         gl::UseProgram(program);
@@ -223,7 +224,7 @@ fn main() {
 
             generate_actors(&mut actors, cam_pos.clone(), game.max_players());
 
-
+            window.set_title(format!("rusteroids - score [{}] - highscore [{}]", game.score, game.highscore).as_slice());
 
             // every second
             let t3 = time::get_time();
@@ -244,6 +245,7 @@ fn main() {
                 }
 
                 println!(":: SCORE : {}", game.score);
+                println!(":: HIGHSCORE : {}", game.highscore);
 
                 println!(":::::::::::::::::::::::::::::::::::::::\n");
 
@@ -490,8 +492,10 @@ fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, x:f32, y:f32, rotation:f32, c
         gl::Uniform3f(color, col[0], col[1], col[2]);
     }
 
-    
-    // Draw a triangle from the 3 vertices
     // LINE_LOOP
     gl::DrawArrays(gl::TRIANGLES, 0, v.len() as i32 / 2);
+    // unsafe {
+    //     gl::DrawElements(gl::TRIANGLES, v.len() as GLsizei,
+    //                                gl::UNSIGNED_INT, ptr::null());
+    // }
 }

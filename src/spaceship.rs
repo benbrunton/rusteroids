@@ -128,7 +128,7 @@ impl Spaceship{
     }
 
     fn rotate(&mut self, direction : i32){
-        self.rotation += (direction * 3) as f32;
+        self.rotation += (direction * 5) as f32;
     }
 
     fn get_rotate_vec(&mut self) -> (f32, f32){
