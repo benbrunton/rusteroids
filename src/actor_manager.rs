@@ -192,7 +192,7 @@ impl ActorManager {
     fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>, 
                                 messages:Vec<(i32, &str)>, 
                                 output_messages:&mut Vec<(&str, actor::ActorView)>) -> Vec<T>{
-        let threshold = 4000.0;
+        let threshold = 4000.0 * 4000.0;
         let mut new_list = vec!();
 
         for &mut actor in list.iter() {
@@ -200,7 +200,7 @@ impl ActorManager {
             if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
                 let x_distance = a_pos.x - px;
                 let y_distance = a_pos.y - py; 
-                let distance = (x_distance * x_distance + y_distance * y_distance).sqrt(); 
+                let distance = x_distance * x_distance + y_distance * y_distance; 
                 if distance > threshold{
                     actor.kill();
                     continue;

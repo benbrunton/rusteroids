@@ -22,6 +22,7 @@ mod kamikaze;
 mod explosion;
 mod token;
 mod game;
+mod background;
 
 // Shader sources
 // vertex shader
@@ -178,6 +179,9 @@ fn main() {
     let mut reset_countdown:uint = 3;
     let mut actors = actor_manager::ActorManager::new();
     actors.restart();
+
+    let mut background = background::Background::new();
+    background.generate(cam_pos.clone());
     
     while !window.should_close() {
 
@@ -218,12 +222,14 @@ fn main() {
 
             cam_pos = get_camera(&actors, cam_pos.clone());
 
-            draw_scene(&actors, loc, cam, color, cam_pos.clone(), &window);
+            draw_scene(&actors, loc, cam, color, cam_pos.clone(), &window, &background);
 
             actors.process_messages(&mut output_messages);
             game.process_messages(&output_messages);
 
             generate_actors(&mut actors, cam_pos.clone(), game.max_players());
+            background.cleanup(cam_pos.clone());
+            background.offscreen_generate(cam_pos.clone());
 
             window.set_title(format!("rusteroids - score [{}] - highscore [{}]", game.score, game.highscore).as_slice());
 
@@ -430,12 +436,22 @@ fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) ->
     (cx, cy)
 }
 
-fn draw_scene(actor_manager:&actor_manager::ActorManager, loc:i32, cam:i32, color:i32, (cx, cy):(f32, f32), window: &glfw::Window){
+fn draw_scene(actor_manager:&actor_manager::ActorManager, 
+        loc:i32, 
+        cam:i32, 
+        color:i32, 
+        (cx, cy):(f32, f32), 
+        window: &glfw::Window,
+        background: &background::Background){
 
     let actors = actor_manager.get();
+    let bg = background.get();
 
     gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
+    for &st in bg.iter(){
+        draw(&st.shape, loc, cam, color, st.x, st.y, 0.0, cx, cy, &st.color);
+    }
 
     for &v in actors.iter() {
         draw_actor(&v, loc, cam, color, cx, cy);
