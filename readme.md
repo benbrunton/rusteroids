@@ -10,8 +10,10 @@
 ## Playing
     cargo run
 
+follow the yellow arrow and collect the token to score
+
 arrow keys to move
 
 spacebar to fire
 
-hold shift for shield
+shift for shield
