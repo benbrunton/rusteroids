@@ -373,7 +373,7 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
 }
 
-fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
+fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),

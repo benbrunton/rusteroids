@@ -293,7 +293,7 @@ impl Actor for Spaceship{
             "stop_rotate_right"         => self.stop_rotate_right(),
             "stop_rotate_left"          => self.stop_rotate_left(),
             "fire"                      => {
-                                            if self.fire_countdown == 0{
+                                            if self.fire_countdown == 0 && !self.shield {
                                                 output_messages.push(("fire", self.get_view().clone()));
                                                 self.fire_countdown = 20;
                                             }
