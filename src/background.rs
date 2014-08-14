@@ -1,7 +1,7 @@
 use std::rand;
 use std::rand::Rng;
 
-static radius : f32 = 0.005;
+static radius : f32 = 0.008;
 
 pub struct BackgroundElement{
     pub shape: Vec<f32>,
@@ -30,7 +30,7 @@ impl Background{
                 radius, 0.0,
                 0.0, radius
             ),
-            color: vec!(0.45, 0.45, 0.3),
+            color: vec!(0.5, 0.5, 0.4),
             stars: vec!()
         }
     }
@@ -50,10 +50,10 @@ impl Background{
 
     pub fn generate(&mut self, (cx, cy):(f32,f32)){
 
-        let minX = cx as i32 - 4000;
-        let maxX = cx as i32 + 4000;
-        let minY = cy as i32 - 4000;
-        let maxY = cy as i32 + 4000;
+        let minX = cx as i32 - 8000;
+        let maxX = cx as i32 + 8000;
+        let minY = cy as i32 - 8000;
+        let maxY = cy as i32 + 8000;
 
         while self.stars.len() < self.num {
             let x = rand::task_rng().gen_range(minX, maxX) as f32;
@@ -64,11 +64,11 @@ impl Background{
     }
 
     pub fn offscreen_generate(&mut self, (cx, cy):(f32,f32)){
-        let minX = cx as i32 - 4000;
-        let maxX = cx as i32 + 4000;
-        let minY = cy as i32 - 4000;
-        let maxY = cy as i32 + 4000;
-        let min_distance = 2600 * 2600; // square instead of sqrt on distance
+        let minX = cx as i32 - 8000;
+        let maxX = cx as i32 + 8000;
+        let minY = cy as i32 - 8000;
+        let maxY = cy as i32 + 8000;
+        let min_distance = 5500 * 5500; // square instead of sqrt on distance
 
         while self.stars.len() < self.num {
             let x = rand::task_rng().gen_range(minX, maxX) as f32;
@@ -85,7 +85,8 @@ impl Background{
     }
 
     pub fn cleanup(&mut self, (cx, cy):(f32, f32)){
-        let threshold = 4000.0 * 4000.0;
+
+        let threshold = 8000.0 * 8000.0;
         let mut output = vec!();
 
         for &pos in self.stars.iter(){
