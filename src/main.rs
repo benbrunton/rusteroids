@@ -31,6 +31,7 @@ static VS_SRC: &'static str =
     in vec4 shape;\n\
     uniform vec3 position;\n\
     uniform vec2 camera;\n\
+    uniform float z;\n\
     void main() {\n\
         float x = shape[0];\n\
         float y = shape[1];\n\
@@ -41,7 +42,7 @@ static VS_SRC: &'static str =
         float c_y   = camera[1];\n\
         float xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
         float yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
-        gl_Position = vec4(xx, yy, 0.0, 1.0);\n\
+        gl_Position = vec4(xx, yy, 0.0, z);\n\
     }";
 
 
@@ -129,6 +130,7 @@ fn main() {
     let mut loc;
     let mut cam;
     let mut color;
+    let mut z;
 
     unsafe {
         // Create Vertex Array Object
@@ -164,6 +166,7 @@ fn main() {
         loc = "position".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
         cam = "camera".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
         color = "color".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+        z = "z".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
     }
 
     let output_on = false;
@@ -222,7 +225,7 @@ fn main() {
 
             cam_pos = get_camera(&actors, cam_pos.clone());
 
-            draw_scene(&actors, loc, cam, color, cam_pos.clone(), &window, &background);
+            draw_scene(&actors, loc, cam, color, z, cam_pos.clone(), &window, &background);
 
             actors.process_messages(&mut output_messages);
             game.process_messages(&output_messages);
@@ -347,6 +350,11 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
     let actors = actor_manager.get();
 
     for &a1 in actors.iter(){
+
+        // todo - if we count the top iter(), we can slice this one
+        //      - to only match remaining actors
+        //      - would then need to push a2.id messages on collision
+        
         let actors2 = actor_manager.get();
 
         for &a2 in actors2.iter(){
@@ -367,6 +375,10 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
             if a1.x + a1.width > a2.x - a2.width && a1.x - a1.width < a2.x + a2.width 
               && a1.y + a1.height > a2.y - a2.height && a1.y - a1.height < a2.y + a2.height {
+
+                // within bounding box - pixel perfect that shit
+                // ...
+                
                 match a2.collision_type{
                     actor::Collide => messages.push((a1.id, "collide")),
                     actor::Collect => messages.push((a1.id, "collect")),
@@ -439,7 +451,8 @@ fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) ->
 fn draw_scene(actor_manager:&actor_manager::ActorManager, 
         loc:i32, 
         cam:i32, 
-        color:i32, 
+        color:i32,
+        z: i32,
         (cx, cy):(f32, f32), 
         window: &glfw::Window,
         background: &background::Background){
@@ -450,33 +463,33 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager,
     gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
     for &st in bg.iter(){
-        draw(&st.shape, loc, cam, color, st.x, st.y, 0.0, cx, cy, &st.color);
+        draw(&st.shape, loc, cam, color, z, st.x, st.y, 0.0, cx, cy, &st.color, 1.9);
     }
 
     for &v in actors.iter() {
-        draw_actor(&v, loc, cam, color, cx, cy);
+        draw_actor(&v, loc, cam, color, z, cx, cy);
     }
 
     let collectables = actor_manager.get_collectables();
 
-    draw_hud(loc, cam, color, (cx, cy), collectables);
+    draw_hud(loc, cam, color, z, (cx, cy), collectables);
 
     window.swap_buffers();
 }
 
-fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, cx: f32, cy: f32){
+fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, z:i32, cx: f32, cy: f32){
 
-    draw(&p.shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &p.color);
+    draw(&p.shape, loc, cam, color, z, p.x, p.y, p.rotation, cx, cy, &p.color, 1.0);
     if p.show_secondary {
         match (p.secondary_shape.clone(), p.secondary_color.clone()) {
-            (Some(shape), Some(second_color)) => draw(&shape, loc, cam, color, p.x, p.y, p.rotation, cx, cy, &second_color),
+            (Some(shape), Some(second_color)) => draw(&shape, loc, cam, color, z, p.x, p.y, p.rotation, cx, cy, &second_color, 1.0),
             _                        => ()
         }
         
     }
 }
 
-fn draw_hud(loc:i32, cam:i32, color:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>){
+fn draw_hud(loc:i32, cam:i32, color:i32, z:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>){
     let v = vec!(
         0.0, 0.0,
         0.04, -0.04,
@@ -510,12 +523,12 @@ fn draw_hud(loc:i32, cam:i32, color:i32, (cx, cy) : (f32, f32), collectables : V
         let x = dx * (distance as f32);
         let y = dy * (distance as f32);
 
-        draw(&v, loc, cam, color, x, y, rotation, 0.0, 0.0, &col);
+        draw(&v, loc, cam, color, z, x, y, rotation, 0.0, 0.0, &col, 1.0);
     }
 
 }
 
-fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, x:f32, y:f32, rotation:f32, cx:f32, cy:f32, col:&Vec<f32>){
+fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, z:i32, x:f32, y:f32, rotation:f32, cx:f32, cy:f32, col:&Vec<f32>, z_val:f32){
     unsafe{
 
         gl::BufferData(gl::ARRAY_BUFFER,
@@ -527,6 +540,7 @@ fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, x:f32, y:f32, rotation:f32, c
         gl::Uniform3f(loc, x / 2000.0, y / 2000.0, rotation);
         gl::Uniform2f(cam, cx / 2000.0, cy / 2000.0);
         gl::Uniform3f(color, col[0], col[1], col[2]);
+        gl::Uniform1f(z, z_val);
     }
 
     // LINE_LOOP / TRIANGLES

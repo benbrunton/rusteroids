@@ -30,7 +30,7 @@ impl Background{
                 radius, 0.0,
                 0.0, radius
             ),
-            color: vec!(0.8, 0.8, 0.7),
+            color: vec!(0.45, 0.45, 0.3),
             stars: vec!()
         }
     }
