@@ -59,7 +59,7 @@ impl Token{
 
 impl Actor for Token{
     
-    fn update(&mut self){
+    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
         self.rotation += self.r_speed;
     }
 

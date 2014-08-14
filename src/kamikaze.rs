@@ -59,7 +59,7 @@ impl Kamikaze{
 
 impl Actor for Kamikaze{
     
-    fn update(&mut self){
+    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
         self.accelerate();
         self.y += self.accY;
         self.x += self.accX;

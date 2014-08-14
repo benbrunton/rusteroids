@@ -86,8 +86,8 @@ impl ActorManager {
             //println!("{} : {}", msg, v);
             match msg{
                 "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
-                //"enemy" => self.add(ActorManager::new_actor(0, 2, v.x as i32 - 2000, v.y as i32 - 2000, 2, 2, v.rotation * 180.0 / 3.14159265359, sh.clone(), 1.1)),
                 "explode" => self.add_explosion(v.x as i32, v.y as i32, (v.width + v.height) as i32 / 2, v.rotation),
+                "trail"   => self.add_explosion(v.x as i32 - v.height as i32 * 2 * v.rotation.sin() as i32, v.y as i32 - v.height as i32 * 2 * v.rotation.cos() as i32, 10, v.rotation),
                 "new_asteroid" => self.split_asteroid(v),
                 "collect" => {
                     if v.id == 1{
@@ -192,6 +192,7 @@ impl ActorManager {
     fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>, 
                                 messages:Vec<(i32, &str)>, 
                                 output_messages:&mut Vec<(&str, actor::ActorView)>) -> Vec<T>{
+        
         let threshold = 4000.0 * 4000.0;
         let mut new_list = vec!();
 
@@ -213,7 +214,7 @@ impl ActorManager {
                 }
             }
 
-            actor.update();
+            actor.update(output_messages);
             new_list.push(actor);
         }
 

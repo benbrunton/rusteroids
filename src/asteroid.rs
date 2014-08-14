@@ -79,7 +79,7 @@ impl Asteroid{
 
 impl Actor for Asteroid{
     
-    fn update(&mut self){
+    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
         self.x += self.vx;
         self.y += self.vy;
         self.rotation += self.r_speed;

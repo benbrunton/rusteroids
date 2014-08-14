@@ -47,7 +47,7 @@ impl Explosion{
 
 impl Actor for Explosion{
     
-    fn update(&mut self){
+    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
         self.age += 1;
 
         if self.age > 15 {

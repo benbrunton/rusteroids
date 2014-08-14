@@ -6,6 +6,7 @@ use std::rand::Rng;
 
 static PI : f32 = 3.14159265359;
 static shield_time: uint = 180;
+static show_trails: bool = false;
 
 #[deriving(Show, Clone, PartialEq)]
 pub struct Spaceship{
@@ -232,7 +233,7 @@ impl Spaceship{
 
 impl Actor for Spaceship{
     
-    fn update(&mut self){
+    fn update(&mut self, output_messages: &mut Vec<(&str, ActorView)>){
         
 
         self.y += self.accY;
@@ -262,6 +263,16 @@ impl Actor for Spaceship{
         }
         self.control();
 
+        if !show_trails{
+            return;
+        }
+
+        if self.is_accelerating {
+            if rand::task_rng().gen_range(0u32, 10) == 9 {
+                output_messages.push(("trail", self.get_view().clone()));
+            }
+        }
+
     }
 
     fn get_view(&self) -> ActorView {
@@ -283,6 +294,7 @@ impl Actor for Spaceship{
     }
 
     fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+
         match message {
             "begin_increase_throttle"   => self.begin_increase_throttle(),
             "begin_decrease_throttle"   => self.begin_decrease_throttle(),
