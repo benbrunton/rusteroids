@@ -1,6 +1,6 @@
 use actor;
 
-static max_players: uint = 30;
+static max_players: uint = 10;
 
 pub struct Game{
     pub score: uint,
