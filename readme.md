@@ -10,6 +10,8 @@
 ## Playing
     cargo run
 
+![Screenshot](screenshot.jpg)
+
 follow the yellow arrow and collect the token to score
 
 arrow keys to move
