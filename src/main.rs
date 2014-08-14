@@ -165,6 +165,7 @@ fn main() {
         color = "color".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
     }
 
+    let output_on = false;
     let global_time = time::get_time();
     let mut t = time::get_time();
     let mut inner_t = time::get_time();
@@ -230,24 +231,27 @@ fn main() {
             let t3 = time::get_time();
             if t3.sec > inner_t.sec {
                 inner_t = t3;
-                println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
-                for &actor in actors.get().iter(){
-                    if actor.id == 1 {
-                        println!("> x  :: {}", actor.x);
-                        println!("> y  :: {}", actor.y);
+
+                if output_on {
+                    println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
+                    for &actor in actors.get().iter(){
+                        if actor.id == 1 {
+                            println!("> x  :: {}", actor.x);
+                            println!("> y  :: {}", actor.y);
+                        }
+
+                        if actor.collision_type == actor::Collect {
+                            println!("-- collect --");
+                            println!("> x  :: {}", actor.x);
+                            println!("> y  :: {}", actor.y);
+                        }
                     }
 
-                    if actor.collision_type == actor::Collect {
-                        println!("-- collect --");
-                        println!("> x  :: {}", actor.x);
-                        println!("> y  :: {}", actor.y);
-                    }
+                    println!(":: SCORE : {}", game.score);
+                    println!(":: HIGHSCORE : {}", game.highscore);
+
+                    println!(":::::::::::::::::::::::::::::::::::::::\n");
                 }
-
-                println!(":: SCORE : {}", game.score);
-                println!(":: HIGHSCORE : {}", game.highscore);
-
-                println!(":::::::::::::::::::::::::::::::::::::::\n");
 
                 if check_restart(&actors){
 
@@ -373,18 +377,18 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
-        glfw::CloseEvent                    => println!("Time: {}, Window close requested.", time),
-        glfw::RefreshEvent                  => println!("Time: {}, Window refresh callback triggered.", time),
-        glfw::FocusEvent(true)              => println!("Time: {}, Window focus gained.", time),
-        glfw::FocusEvent(false)             => println!("Time: {}, Window focus lost.", time),
-        glfw::IconifyEvent(true)            => println!("Time: {}, Window was minimised", time),
-        glfw::IconifyEvent(false)           => println!("Time: {}, Window was maximised.", time),
-        glfw::FramebufferSizeEvent(w, h)    => println!("Time: {}, Framebuffer size: ({}, {})", time, w, h),
+        // glfw::CloseEvent                    => println!("Time: {}, Window close requested.", time),
+        // glfw::RefreshEvent                  => println!("Time: {}, Window refresh callback triggered.", time),
+        // glfw::FocusEvent(true)              => println!("Time: {}, Window focus gained.", time),
+        // glfw::FocusEvent(false)             => println!("Time: {}, Window focus lost.", time),
+        // glfw::IconifyEvent(true)            => println!("Time: {}, Window was minimised", time),
+        // glfw::IconifyEvent(false)           => println!("Time: {}, Window was maximised.", time),
+        // glfw::FramebufferSizeEvent(w, h)    => println!("Time: {}, Framebuffer size: ({}, {})", time, w, h),
         // glfw::CharEvent(character)          => println!("Time: {}, Character: {}", time, character),
-        glfw::MouseButtonEvent(btn, action, mods) => println!("Time: {}, Button: {}, Action: {}, Modifiers: [{}]", time, glfw::ShowAliases(btn), action, mods),
+        // glfw::MouseButtonEvent(btn, action, mods) => println!("Time: {}, Button: {}, Action: {}, Modifiers: [{}]", time, glfw::ShowAliases(btn), action, mods),
         // glfw::CursorPosEvent(xpos, ypos)    => window.set_title(format!("Time: {}, Cursor position: ({}, {})", time, xpos, ypos).as_slice()),
-        glfw::CursorEnterEvent(true)        => println!("Time: {}, Cursor entered window.", time),
-        glfw::CursorEnterEvent(false)       => println!("Time: {}, Cursor left window.", time),
+        // glfw::CursorEnterEvent(true)        => println!("Time: {}, Cursor entered window.", time),
+        // glfw::CursorEnterEvent(false)       => println!("Time: {}, Cursor left window.", time),
         // glfw::ScrollEvent(x, y)             => window.set_title(format!("Time: {}, Scroll offset: ({}, {})", time, x, y).as_slice()),
         glfw::KeyEvent(key, /* scancode */ _, action, /* mods */ _ ) => {
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
@@ -400,7 +404,7 @@ fn handle_window_event(window: &glfw::Window, (time, event): (f64, glfw::WindowE
                 (glfw::KeyLeft, glfw::Release) => messages.push((1, "stop_rotate_left")),
                 (glfw::KeySpace, glfw::Release) => messages.push((1, "fire")),
                 (glfw::KeyLeftShift, glfw::Press) => messages.push((1, "shield_up")),
-                (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
+                // (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();
