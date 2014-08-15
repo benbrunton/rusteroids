@@ -243,7 +243,7 @@ fn main() {
 
                 if output_on {
                     println!("::  {}s  ::::::::::::::::::::::::::::::", t3.sec - global_time.sec);
-                    for &actor in actors.get().iter(){
+                    for actor in actors.get().iter(){
                         if actor.id == 1 {
                             println!("> x  :: {}", actor.x);
                             println!("> y  :: {}", actor.y);
@@ -330,7 +330,7 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32
 
 fn check_restart(actors: &actor_manager::ActorManager) -> bool{
     let mut player_exists = false;
-    for &actor in actors.get().iter(){
+    for actor in actors.get().iter(){
         if actor.id == 1 {
             player_exists = true;
             break;
@@ -349,7 +349,7 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
     let actors = actor_manager.get();
 
-    for &a1 in actors.iter(){
+    for a1 in actors.iter(){
 
         // todo - if we count the top iter(), we can slice this one
         //      - to only match remaining actors
@@ -357,7 +357,7 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
         
         let actors2 = actor_manager.get();
 
-        for &a2 in actors2.iter(){
+        for a2 in actors2.iter(){
 
             if     a1.id    == 0 
                 || a2.id    == 0
@@ -439,7 +439,7 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
 
 fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) -> (f32, f32){
     let actors = actor_manager.get();
-    for &v in actors.iter() {
+    for v in actors.iter() {
         if v.id == 1 {
             return (v.x, v.y);
         }
@@ -462,17 +462,17 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager,
 
     gl::ClearColor(0.1, 0.1, 0.2, 1.0);
     gl::Clear(gl::COLOR_BUFFER_BIT);
-    for &st in bg.iter(){
+    for st in bg.iter(){
         draw(&st.shape, loc, cam, color, z, st.x, st.y, 0.0, cx, cy, &st.color, 1.9);
     }
 
     let mut meter = 0.0;
-    for &v in actors.iter() {
+    for v in actors.iter() {
         if v.id == 1 {
             meter = v.meter;
         }
 
-        draw_actor(&v, loc, cam, color, z, cx, cy);
+        draw_actor(v, loc, cam, color, z, cx, cy);
     }
 
     let collectables = actor_manager.get_collectables();
@@ -509,7 +509,7 @@ fn draw_hud(loc:i32, cam:i32, color:i32, z:i32, (cx, cy) : (f32, f32), collectab
         0.9, 0.9, 0.4
     );
 
-    for &token in collectables.iter(){
+    for token in collectables.iter(){
         let dx = token.x - cx;
         let dy = token.y - cy;
         let rotation = dx.atan2(dy);

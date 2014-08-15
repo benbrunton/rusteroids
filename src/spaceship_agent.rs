@@ -24,7 +24,7 @@ pub fn set_instructions(actor: ActorView,
 
     let mut priority = Nothing;
     
-    for &enemy in nearbys.iter() {
+    for enemy in nearbys.move_iter() {
         if enemy.id == 1 {
             priority = Player(enemy);
             break;

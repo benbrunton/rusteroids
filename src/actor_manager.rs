@@ -54,7 +54,7 @@ impl ActorManager {
     pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
         let mut player_messages = messages.clone();
 
-        for &mut actor in self.get().iter(){
+        for ref actor in self.get().iter(){
             if actor.id == 1 {
                 self.px = actor.x;
                 self.py = actor.y;
@@ -63,13 +63,13 @@ impl ActorManager {
         }
 
         
-        for &ship in ActorManager::get_views(&self.spaceships.clone()).iter(){
+        for ship in ActorManager::get_views(&self.spaceships.clone()).iter(){
             if ship.id == 1 {
                 // forget about the player
                 continue;
             }
-            let nearest = self.get_nearest(&ship);
-            spaceship_agent::set_instructions(ship, nearest, &mut player_messages);
+            let nearest = self.get_nearest(ship);
+            spaceship_agent::set_instructions(ship.clone(), nearest, &mut player_messages);
         }
 
         self.spaceships = ActorManager::update_actor_list(self.px, self.py, &mut self.spaceships, player_messages.clone(), output_messages);
@@ -173,7 +173,7 @@ impl ActorManager {
     fn get_nearest(&self, actor: &actor::ActorView) -> Vec<actor::ActorView>{
         let mut nearest = vec!();
 
-        for &enemy in self.get().iter(){
+        for enemy in self.get().iter(){
             if enemy.id == actor.id {
                 continue;
             }
@@ -194,9 +194,9 @@ impl ActorManager {
                                 output_messages:&mut Vec<(&str, actor::ActorView)>) -> Vec<T>{
         
         let threshold = 4000.0 * 4000.0;
-        let mut new_list = vec!();
+        let mut ac:Vec<T> = vec!();
 
-        for &mut actor in list.iter() {
+        for actor in list.mut_iter() {
             let a_pos = actor.get_view();
             if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
                 let x_distance = a_pos.x - px;
@@ -215,14 +215,9 @@ impl ActorManager {
             }
 
             actor.update(output_messages);
-            new_list.push(actor);
-        }
 
-
-        let mut ac = vec!();
-        for &actor in new_list.iter(){
-            if actor.is_alive() {
-                ac.push(actor);
+            if actor.is_alive(){
+                ac.push(actor.clone());
             }
         }
 
@@ -232,7 +227,7 @@ impl ActorManager {
 
     fn get_views<T: actor::Actor>(list: &Vec<T>) -> Vec<actor::ActorView>{
         let mut v: Vec< actor::ActorView > = vec!();
-        for &actor in list.iter() {
+        for actor in list.iter() {
             v.push(actor.get_view());
         }
         v

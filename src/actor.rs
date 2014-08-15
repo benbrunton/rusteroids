@@ -27,7 +27,7 @@ pub struct ActorView{
 }
 
 
-pub trait Actor : Show + PartialEq {
+pub trait Actor : Show + PartialEq + Clone {
     fn update(&mut self, output_messages: &mut Vec<(&str, ActorView)>);
     fn get_view(&self) -> ActorView;
     fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>);
