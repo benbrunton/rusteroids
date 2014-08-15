@@ -77,7 +77,8 @@ impl Actor for Token{
             collision_type: actor::Collect,
             show_secondary: false,
             secondary_shape: None,
-            secondary_color: None
+            secondary_color: None,
+            meter: 0.0
         }
     }
 

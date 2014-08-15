@@ -208,13 +208,13 @@ impl Spaceship{
         self.shield = true;
         self.color = vec!(0.75, 0.85, 0.5);
         self.shape = vec!(
-            0.0, 0.05,
+            0.0, 0.06,
             0.04, -0.05,
             0.0, -0.03,
 
             0.0, -0.03,
             -0.04, -0.05,
-            0.0, 0.05
+            0.0, 0.06
         );
 
         self.is_accelerating = false;
@@ -251,6 +251,10 @@ impl Actor for Spaceship{
 
         if self.shield {
             if self.shield_timer > 0 {
+
+                let r = rand::task_rng().gen_range(0.5f32, 1.0);
+                let b = rand::task_rng().gen_range(0.2f32, 0.8);
+                self.color = vec!(r, 0.85, b);
                 self.shield_timer -= 1;
             } else {
                 self.shield_down();
@@ -289,7 +293,8 @@ impl Actor for Spaceship{
             collision_type: actor::Collide,
             show_secondary: self.is_accelerating || self.thrust_timer < 5,
             secondary_shape: Some(self.secondary_shape.clone()),
-            secondary_color: Some(self.secondary_color.clone())
+            secondary_color: Some(self.secondary_color.clone()),
+            meter: self.shield_timer as f32 / self.shield_max_time as f32
         }
     }
 

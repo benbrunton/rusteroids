@@ -22,7 +22,8 @@ pub struct ActorView{
     pub collision_type: CollisionType,
     pub show_secondary: bool,
     pub secondary_shape: Option<Vec<f32>>,
-    pub secondary_color: Option<Vec<f32>>
+    pub secondary_color: Option<Vec<f32>>,
+    pub meter: f32
 }
 
 

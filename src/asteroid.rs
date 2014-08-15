@@ -99,7 +99,8 @@ impl Actor for Asteroid{
             collision_type: actor::Collide,
             show_secondary: false,
             secondary_shape: None,
-            secondary_color: None
+            secondary_color: None,
+            meter: 0.0
         }
     }
 

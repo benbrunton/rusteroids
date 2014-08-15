@@ -422,7 +422,7 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
                 (glfw::KeyLeft, glfw::Release) => messages.push((1, "stop_rotate_left")),
                 (glfw::KeySpace, glfw::Release) => messages.push((1, "fire")),
                 (glfw::KeyLeftShift, glfw::Press) => messages.push((1, "shield_up")),
-                // (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
+                (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();
@@ -466,13 +466,18 @@ fn draw_scene(actor_manager:&actor_manager::ActorManager,
         draw(&st.shape, loc, cam, color, z, st.x, st.y, 0.0, cx, cy, &st.color, 1.9);
     }
 
+    let mut meter = 0.0;
     for &v in actors.iter() {
+        if v.id == 1 {
+            meter = v.meter;
+        }
+
         draw_actor(&v, loc, cam, color, z, cx, cy);
     }
 
     let collectables = actor_manager.get_collectables();
 
-    draw_hud(loc, cam, color, z, (cx, cy), collectables);
+    draw_hud(loc, cam, color, z, (cx, cy), collectables, meter);
 
     window.swap_buffers();
 }
@@ -489,7 +494,7 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, z:i32, cx: f32,
     }
 }
 
-fn draw_hud(loc:i32, cam:i32, color:i32, z:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>){
+fn draw_hud(loc:i32, cam:i32, color:i32, z:i32, (cx, cy) : (f32, f32), collectables : Vec<actor::ActorView>, meter: f32){
     let v = vec!(
         0.0, 0.0,
         0.04, -0.04,
@@ -525,6 +530,22 @@ fn draw_hud(loc:i32, cam:i32, color:i32, z:i32, (cx, cy) : (f32, f32), collectab
 
         draw(&v, loc, cam, color, z, x, y, rotation, 0.0, 0.0, &col, 1.0);
     }
+
+    let m = meter/5.0;
+    let h = 0.02;
+    let v = vec!(
+        0.0, 0.0,
+        0.0, -h,
+        m, 0.0,
+
+        m, 0.0,
+        m, -h,
+        0.0, -h
+    );
+
+    let col = vec!(0.4, 0.6, 0.2);
+
+    draw(&v, loc, cam, color, z, 1500.0, -1850.0, 0.0, 0.0, 0.0, &col, 1.0);
 
 }
 
