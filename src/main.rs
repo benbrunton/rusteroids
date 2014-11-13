@@ -120,7 +120,8 @@ fn main() {
     window.make_current();
 
     // Load the OpenGL function pointers
-    gl::load_with(|s| glfw.get_proc_address(s));
+//    gl::load_with(|s| glfw.get_proc_address(s));
+    gl::load_with(|s| window.get_proc_address(s));
 
     // Create GLSL shaders
     let vs = compile_shader(VS_SRC, gl::VERTEX_SHADER);
@@ -304,15 +305,15 @@ fn main() {
 
 fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32), max_actors: uint){
 
-    let minX = cx as i32 - 4000;
-    let maxX = cx as i32 + 4000;
-    let minY = cy as i32 - 4000;
-    let maxY = cy as i32 + 4000;
+    let min_x = cx as i32 - 4000;
+    let max_x = cx as i32 + 4000;
+    let min_y = cy as i32 - 4000;
+    let max_y = cy as i32 + 4000;
     let min_distance = 2600 * 2600; // square instead of sqrt on distance
 
     while actors.get().len() < max_actors {
-        let x = std::rand::task_rng().gen_range(minX, maxX);
-        let y = std::rand::task_rng().gen_range(minY, maxY);
+        let x = std::rand::task_rng().gen_range(min_x, max_x);
+        let y = std::rand::task_rng().gen_range(min_y, max_y);
         
         let x_dis = x - cx as i32;
         let y_dis = y - cy as i32;

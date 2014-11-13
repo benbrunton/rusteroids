@@ -9,8 +9,8 @@ pub struct Bullet{
     id: i32,
     x: f32,
     y: f32,
-    accX: f32,
-    accY: f32,
+    acc_x: f32,
+    acc_y: f32,
     rotation: f32,
     shape: Vec<f32>,
     is_alive:bool,
@@ -31,12 +31,12 @@ impl Bullet{
 
         let acc = 100.0;
         let (dirx, diry) = Bullet::get_rotate_vec(rotation);
-        let accX = acc * dirx;
-        let accY = acc * diry;
+        let acc_x = acc * dirx;
+        let acc_y = acc * diry;
 
         Bullet{
             id: id, parent: parent, x: x as f32, y: y as f32,
-            rotation: rotation, accX: accX, accY: accY,
+            rotation: rotation, acc_x: acc_x, acc_y: acc_y,
             shape: shape,
             is_alive: true,
             color: color
@@ -53,8 +53,8 @@ impl Bullet{
 impl Actor for Bullet{
     
     fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
-        self.y += self.accY;
-        self.x += self.accX;
+        self.y += self.acc_y;
+        self.x += self.acc_x;
 
     }
 

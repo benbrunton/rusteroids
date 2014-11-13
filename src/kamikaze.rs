@@ -9,8 +9,8 @@ pub struct Kamikaze{
     id: i32,
     x: f32,
     y: f32,
-    accX: f32,
-    accY: f32,
+    acc_x: f32,
+    acc_y: f32,
     rotation: f32,
     shape: Vec<f32>,
     acc: f32,
@@ -19,7 +19,7 @@ pub struct Kamikaze{
 }
 
 impl Kamikaze{
-    pub fn new(id: i32, x: i32, y: i32, (targetX, targetY): (f32, f32)) -> Kamikaze { 
+    pub fn new(id: i32, x: i32, y: i32, (target_x, target_y): (f32, f32)) -> Kamikaze { 
         let shape = vec!(
             0.0,  0.06,
             0.024, -0.06,
@@ -28,13 +28,13 @@ impl Kamikaze{
 
         let color = vec!(0.15, 0.15, 0.5);
         let acc = 1.01;
-        let dx = targetX - x as f32;
-        let dy = targetY - y as f32;
+        let dx = target_x - x as f32;
+        let dy = target_y - y as f32;
         let rotation = dx.atan2(dy) * 180.0 / PI;
 
         Kamikaze{
             id: id, x: x as f32, y: y as f32,
-            rotation: rotation, accX: 0.0, accY: 0.0,
+            rotation: rotation, acc_x: 0.0, acc_y: 0.0,
             shape: shape,
             acc: acc,
             is_alive: true,
@@ -46,8 +46,8 @@ impl Kamikaze{
     fn accelerate(&mut self){
         let acc = self.acc;
         let (dirx, diry) = self.get_rotate_vec();
-        self.accX += acc * dirx;
-        self.accY += acc * diry;
+        self.acc_x += acc * dirx;
+        self.acc_y += acc * diry;
     }
 
     fn get_rotate_vec(&mut self) -> (f32, f32){
@@ -61,8 +61,8 @@ impl Actor for Kamikaze{
     
     fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
         self.accelerate();
-        self.y += self.accY;
-        self.x += self.accX;
+        self.y += self.acc_y;
+        self.x += self.acc_x;
     }
 
     fn get_view(&self) -> ActorView {

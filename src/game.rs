@@ -1,6 +1,6 @@
 use actor;
 
-static max_players: uint = 5;
+static MAX_PLAYERS: uint = 5;
 
 pub struct Game{
     pub score: uint,
@@ -15,7 +15,7 @@ impl Game{
         }
     }
     pub fn max_players(&self)-> uint{
-        max_players + (self.score * 3)
+        MAX_PLAYERS + (self.score * 3)
     }
 
     pub fn restart(&mut self){

@@ -5,16 +5,16 @@ use std::rand;
 use std::rand::Rng;
 
 static PI : f32 = 3.14159265359;
-static shield_time: uint = 180;
-static show_trails: bool = false;
+static SHIELD_TIME: uint = 180;
+static SHOW_TRAILS: bool = false;
 
 #[deriving(Show, Clone, PartialEq)]
 pub struct Spaceship{
     id: i32,
     x: f32,
     y: f32,
-    accX: f32,
-    accY: f32,
+    acc_x: f32,
+    acc_y: f32,
     rotation: f32,
     is_accelerating: bool,
     is_decelerating: bool,
@@ -77,7 +77,7 @@ impl Spaceship{
 
         Spaceship{
             id: id, x: x as f32, y: y as f32,
-            rotation: rotation, accX: 0.0, accY: 0.0,
+            rotation: rotation, acc_x: 0.0, acc_y: 0.0,
             is_accelerating: false, is_decelerating: false,
             is_rotating_right: false, is_rotating_left: false,
             shape: shape.clone(),
@@ -88,8 +88,8 @@ impl Spaceship{
             normal_color: color.clone(),
             shield: false,
             fire_countdown: 0,
-            shield_timer: shield_time,
-            shield_max_time: shield_time,
+            shield_timer: SHIELD_TIME,
+            shield_max_time: SHIELD_TIME,
             secondary_color: secondary_color,
             secondary_shape: secondary_shape.clone(),
             secondary_shape_1: secondary_shape.clone(),
@@ -142,8 +142,8 @@ impl Spaceship{
         self.thrust_timer = 0;
 
         let (dirx, diry) = self.get_rotate_vec();
-        self.accX += acc * dirx;
-        self.accY += acc * diry;
+        self.acc_x += acc * dirx;
+        self.acc_y += acc * diry;
         self.is_decelerating = false;
     }
     fn decelerate(&mut self){
@@ -151,8 +151,8 @@ impl Spaceship{
 
         let (dirx, diry) = self.get_rotate_vec();
 
-        self.accX -= acc * dirx;
-        self.accY -= acc * diry;
+        self.acc_x -= acc * dirx;
+        self.acc_y -= acc * diry;
     }
 
     fn control(&mut self){
@@ -178,15 +178,15 @@ impl Spaceship{
 
     fn slow_down(&mut self){
 
-        self.accX *= 0.992;
-        self.accY *= 0.992;
+        self.acc_x *= 0.992;
+        self.acc_y *= 0.992;
 
-        if self.accX < 0.005 && self.accX > -0.005 {
-            self.accX = 0.0;
+        if self.acc_x < 0.005 && self.acc_x > -0.005 {
+            self.acc_x = 0.0;
         }
 
-        if self.accY < 0.005 && self.accY > -0.005 {
-            self.accY = 0.0;
+        if self.acc_y < 0.005 && self.acc_y > -0.005 {
+            self.acc_y = 0.0;
         }
     }
 
@@ -236,8 +236,8 @@ impl Actor for Spaceship{
     fn update(&mut self, output_messages: &mut Vec<(&str, ActorView)>){
         
 
-        self.y += self.accY;
-        self.x += self.accX;
+        self.y += self.acc_y;
+        self.x += self.acc_x;
 
         self.slow_down();
 
@@ -267,7 +267,7 @@ impl Actor for Spaceship{
         }
         self.control();
 
-        if !show_trails{
+        if !SHOW_TRAILS{
             return;
         }
 

@@ -6,8 +6,6 @@ static PI : f32 = 3.14159265359;
 
 enum Activity {
     Player(ActorView),
-    Forward,
-    Fire,
     Nothing
 }
 
@@ -35,7 +33,6 @@ pub fn set_instructions(actor: ActorView,
 
     match priority{
         Player(enemy)   => attack_player(actor, enemy, player_messages),
-        Fire            => player_messages.push((actor.id, "fire")),
         _               => random_behaviour(actor.id, player_messages)
     }
 }
