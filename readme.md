@@ -1,6 +1,10 @@
 # Rusteroids
 #### an asteroids clone built in Rust
 
+#### develop branch
+[![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)))]]
+
+
 ## Building
 ### Requirements:
 - gflw
