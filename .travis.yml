@@ -1,5 +1,5 @@
 language: rust
-rust: 0.13.0
+rust: 0.12.0
 before_install:
   - sudo add-apt-repository --yes ppa:hansjorg/rust
   - sudo add-apt-repository --yes ppa:cmrx64/cargo
