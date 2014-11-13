@@ -196,7 +196,7 @@ impl ActorManager {
         let threshold = 4000.0 * 4000.0;
         let mut ac:Vec<T> = vec!();
 
-        for actor in list.mut_iter() {
+        for actor in list.iter_mut() {
             let a_pos = actor.get_view();
             if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
                 let x_distance = a_pos.x - px;
