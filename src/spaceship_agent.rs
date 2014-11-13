@@ -24,7 +24,7 @@ pub fn set_instructions(actor: ActorView,
 
     let mut priority = Nothing;
     
-    for enemy in nearbys.move_iter() {
+    for enemy in nearbys.into_iter() {
         if enemy.id == 1 {
             priority = Player(enemy);
             break;
@@ -43,17 +43,17 @@ pub fn set_instructions(actor: ActorView,
 fn random_behaviour(id: i32, player_messages: &mut Vec<(i32, &str)>){
     let rand = rand::task_rng().gen_range(0u32, 100);
     match rand {
-        0..50  => {
+        0...50  => {
             player_messages.push((id, "stop_rotate_right"));
             player_messages.push((id, "stop_rotate_left"));
             player_messages.push((id, "begin_increase_throttle"));
         },
-        51..70 => {
+        51...70 => {
             player_messages.push((id, "begin_rotate_left"));
             player_messages.push((id, "stop_rotate_right"));
             player_messages.push((id, "stop_increase_throttle"));
         },
-        71..90 => {
+        71...90 => {
             player_messages.push((id, "begin_rotate_right"));
             player_messages.push((id, "stop_rotate_left"));
             player_messages.push((id, "stop_increase_throttle"));
