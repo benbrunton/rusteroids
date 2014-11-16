@@ -11,6 +11,8 @@ use std::mem;
 use std::ptr;
 use std::str;
 use std::rand::Rng;
+use std::num::Float;
+use std::num::FloatMath;
 
 mod actor;
 mod actor_manager;

@@ -1,6 +1,7 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
+use std::num::FloatMath;
 
 static PI : f32 = 3.14159265359;
 

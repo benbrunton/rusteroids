@@ -1,6 +1,7 @@
 use actor::ActorView;
 use std::rand;
 use std::rand::Rng;
+use std::num::FloatMath;
 
 static PI : f32 = 3.14159265359;
 
