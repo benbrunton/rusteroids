@@ -4,7 +4,13 @@ version = "0.1.0"
 dependencies = [
  "gl 0.0.1 (git+https://github.com/bjz/gl-rs)",
  "glfw 0.0.1 (git+https://github.com/bjz/glfw-rs)",
+ "time 0.0.1 (git+https://github.com/rust-lang/time)",
 ]
+
+[[package]]
+name = "gcc"
+version = "0.0.1"
+source = "git+https://github.com/alexcrichton/gcc-rs#f25b3ba9c40303781189cc137fb98fffe5b56de7"
 
 [[package]]
 name = "gl"
@@ -57,4 +63,12 @@ source = "git+https://github.com/netvl/rust-xml#d6c57380a300b94f7e7881979dbe5459
 name = "semver"
 version = "0.1.0"
 source = "git+https://github.com/rust-lang/semver#7dca047a9cd40e929a4545b37a1917daff82f156"
+
+[[package]]
+name = "time"
+version = "0.0.1"
+source = "git+https://github.com/rust-lang/time#d6219df8537e74fa87eeb7d372681c276dc5f9ff"
+dependencies = [
+ "gcc 0.0.1 (git+https://github.com/alexcrichton/gcc-rs)",
+]
 

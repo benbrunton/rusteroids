@@ -8,6 +8,8 @@ use token;
 use spaceship_agent;
 use std::rand;
 use std::rand::Rng;
+use std::num::Float;
+use std::num::FloatMath;
 
 #[deriving(Clone, Show, PartialEq)]
 pub struct ActorManager{

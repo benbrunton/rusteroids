@@ -1,0 +1,3 @@
+language: rust
+before_install:
+  - sudo apt-get install libXxf86vm-dev
