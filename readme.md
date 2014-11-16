@@ -2,6 +2,7 @@
 #### an asteroids clone built in Rust
 
 develop branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)
+
 master branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
 
 
