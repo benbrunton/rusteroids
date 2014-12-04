@@ -74,7 +74,7 @@ impl Actor for Token{
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
-            collision_type: actor::Collect,
+            collision_type: actor::CollisionType::Collect,
             show_secondary: false,
             secondary_shape: None,
             secondary_color: None,
