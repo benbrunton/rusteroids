@@ -2,7 +2,6 @@
 
 extern crate gl;
 extern crate glfw;
-extern crate native;
 extern crate time;
 
 use gl::types::*;
@@ -109,11 +108,11 @@ fn main() {
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     // Choose a GL profile that is compatible with OS X 10.7+
-    glfw.window_hint(glfw::ContextVersion(3, 2));
-    glfw.window_hint(glfw::OpenglForwardCompat(true));
-    glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
+    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+    glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
+    glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
 
-    let (window, events) = glfw.create_window(800, 600, "rusteroids", glfw::Windowed)
+    let (window, events) = glfw.create_window(800, 600, "rusteroids", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
     window.set_all_polling(true);
@@ -254,7 +253,7 @@ fn main() {
                             println!("> y  :: {}", actor.y);
                         }
 
-                        if actor.collision_type == actor::Collect {
+                        if actor.collision_type == actor::CollisionType::Collect {
                             println!("-- collect --");
                             println!("> x  :: {}", actor.x);
                             println!("> y  :: {}", actor.y);
@@ -369,8 +368,8 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 || a1.id    == a2.id
                 || a1.id    == a2.parent
                 || a2.id    == a1.parent
-                || a1.collision_type == actor::Ignore
-                || a2.collision_type == actor::Ignore {
+                || a1.collision_type == actor::CollisionType::Ignore
+                || a2.collision_type == actor::CollisionType::Ignore {
                 continue;
             }
 
@@ -385,8 +384,8 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 // ...
                 
                 match a2.collision_type{
-                    actor::Collide => messages.push((a1.id, "collide")),
-                    actor::Collect => messages.push((a1.id, "collect")),
+                    actor::CollisionType::Collide => messages.push((a1.id, "collide")),
+                    actor::CollisionType::Collect => messages.push((a1.id, "collect")),
                     _              => ()
                 }
                 
@@ -413,21 +412,21 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
         // glfw::CursorEnterEvent(true)        => println!("Time: {}, Cursor entered window.", time),
         // glfw::CursorEnterEvent(false)       => println!("Time: {}, Cursor left window.", time),
         // glfw::ScrollEvent(x, y)             => window.set_title(format!("Time: {}, Scroll offset: ({}, {})", time, x, y).as_slice()),
-        glfw::KeyEvent(key, /* scancode */ _, action, /* mods */ _ ) => {
+        glfw::WindowEvent::Key(key, /* scancode */ _, action, /* mods */ _ ) => {
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
-                (glfw::KeyEscape, glfw::Press) => window.set_should_close(true),
-                (glfw::KeyUp, glfw::Press) => messages.push((1, "begin_increase_throttle")),
-                (glfw::KeyDown, glfw::Press) => messages.push((1, "begin_decrease_throttle")),
-                (glfw::KeyUp, glfw::Release) => messages.push((1, "stop_increase_throttle")),
-                (glfw::KeyDown, glfw::Release) => messages.push((1, "stop_decrease_throttle")),
-                (glfw::KeyRight, glfw::Press) => messages.push((1, "begin_rotate_right")),
-                (glfw::KeyLeft, glfw::Press) => messages.push((1, "begin_rotate_left")),
-                (glfw::KeyRight, glfw::Release) => messages.push((1, "stop_rotate_right")),
-                (glfw::KeyLeft, glfw::Release) => messages.push((1, "stop_rotate_left")),
-                (glfw::KeySpace, glfw::Release) => messages.push((1, "fire")),
-                (glfw::KeyLeftShift, glfw::Press) => messages.push((1, "shield_up")),
-                (glfw::KeyLeftShift, glfw::Release) => messages.push((1, "shield_down")),
+                (glfw::Key::Escape, glfw::Action::Press) => window.set_should_close(true),
+                (glfw::Key::Up, glfw::Action::Press) => messages.push((1, "begin_increase_throttle")),
+                (glfw::Key::Down, glfw::Action::Press) => messages.push((1, "begin_decrease_throttle")),
+                (glfw::Key::Up, glfw::Action::Release) => messages.push((1, "stop_increase_throttle")),
+                (glfw::Key::Down, glfw::Action::Release) => messages.push((1, "stop_decrease_throttle")),
+                (glfw::Key::Right, glfw::Action::Press) => messages.push((1, "begin_rotate_right")),
+                (glfw::Key::Left, glfw::Action::Press) => messages.push((1, "begin_rotate_left")),
+                (glfw::Key::Right, glfw::Action::Release) => messages.push((1, "stop_rotate_right")),
+                (glfw::Key::Left, glfw::Action::Release) => messages.push((1, "stop_rotate_left")),
+                (glfw::Key::Space, glfw::Action::Release) => messages.push((1, "fire")),
+                (glfw::Key::LeftShift, glfw::Action::Press) => messages.push((1, "shield_up")),
+                (glfw::Key::LeftShift, glfw::Action::Release) => messages.push((1, "shield_down")),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();

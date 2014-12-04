@@ -200,7 +200,7 @@ impl ActorManager {
 
         for actor in list.iter_mut() {
             let a_pos = actor.get_view();
-            if actor.get_id() != 1 && a_pos.collision_type != actor::Collect{
+            if actor.get_id() != 1 && a_pos.collision_type != actor::CollisionType::Collect{
                 let x_distance = a_pos.x - px;
                 let y_distance = a_pos.y - py; 
                 let distance = x_distance * x_distance + y_distance * y_distance; 

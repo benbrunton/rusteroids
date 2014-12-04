@@ -291,7 +291,7 @@ impl Actor for Spaceship{
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
-            collision_type: actor::Collide,
+            collision_type: actor::CollisionType::Collide,
             show_secondary: self.is_accelerating || self.thrust_timer < 5,
             secondary_shape: Some(self.secondary_shape.clone()),
             secondary_color: Some(self.secondary_color.clone()),

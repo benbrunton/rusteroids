@@ -21,11 +21,11 @@ pub fn set_instructions(actor: ActorView,
     // 2. can go forward
     // 3. fire
 
-    let mut priority = Nothing;
+    let mut priority = Activity::Nothing;
     
     for enemy in nearbys.into_iter() {
         if enemy.id == 1 {
-            priority = Player(enemy);
+            priority = Activity::Player(enemy);
             break;
         }
 
@@ -33,7 +33,7 @@ pub fn set_instructions(actor: ActorView,
     }
 
     match priority{
-        Player(enemy)   => attack_player(actor, enemy, player_messages),
+        Activity::Player(enemy)   => attack_player(actor, enemy, player_messages),
         _               => random_behaviour(actor.id, player_messages)
     }
 }
