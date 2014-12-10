@@ -21,11 +21,11 @@ master branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg
 Follow the yellow arrow and collect the token to score a point
 
 ###Controls
-|Movement | Key |
+| Key |Movement |
 | ------: | :------|
-|forwards thrust  | up |
-|backwards thrust | down |
+| up | forwards thrust  |
+|down |backwards thrust | 
 |left						  | left |
 |right					  | right |
-|fire						  | spacebar |
-|shield					  | shift |
+| spacebar |fire						  |
+| shift |shield					  |
