@@ -8,9 +8,9 @@ master branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg
 
 ## Building
 ### Requirements:
-- gflw
-- rust
-- cargo
+- [gflw](http://www.glfw.org/)
+- [rust](http://www.rust-lang.org/)
+- [cargo](http://doc.crates.io/)
 
 ## Playing
     cargo run
@@ -18,10 +18,14 @@ master branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg
 ### Gameplay
 [![Gameplay Video](rusteroids.gif)](http://www.youtube.com/watch?v=Jb8oIn0ot6w)
 
-follow the yellow arrow and collect the token to score
+Follow the yellow arrow and collect the token to score a point
 
-arrow keys to move
-
-spacebar to fire
-
-shift for shield
+###Controls
+|Movement | Key |
+| ------: | :------|
+|forwards thrust  | up |
+|backwards thrust | down |
+|left						  | left |
+|right					  | right |
+|fire						  | spacebar |
+|shield					  | shift |
