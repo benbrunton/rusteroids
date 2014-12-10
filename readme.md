@@ -1,20 +1,19 @@
 # Rusteroids
 #### an asteroids clone built in Rust
 
-### Build Status
 branch | status
 ----|----
 develop | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)
 **master** | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
 
 
-## Building
-### Requirements:
+### Dependencies:
 - [gflw](http://www.glfw.org/)
 - [rust](http://www.rust-lang.org/)
 - [cargo](http://doc.crates.io/)
 
-## Playing
+### Playing
+Use cargo to build and run the game:
 ```bash
     cargo run
 ```
