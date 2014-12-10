@@ -1,30 +1,34 @@
 # Rusteroids
 #### an asteroids clone built in Rust
 
-develop branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)
+branch | status
+----|----
+develop | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)
+**master** | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
 
-master branch : [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
 
+### Dependencies:
+- [gflw](http://www.glfw.org/)
+- [rust](http://www.rust-lang.org/)
+- [cargo](http://doc.crates.io/)
 
-## Building
-### Requirements:
-- gflw
-- rust
-- cargo
-
-## Playing
+### Playing
+Use cargo to build and run the game:
+```bash
     cargo run
-
-### Screenshot
-![Screenshot](screenshot.jpg)
+```
 
 ### Gameplay
-[![Gameplay Video](http://img.youtube.com/vi/Jb8oIn0ot6w/0.jpg)](http://www.youtube.com/watch?v=Jb8oIn0ot6w)
+[![Gameplay Video](rusteroids.gif)](http://www.youtube.com/watch?v=Jb8oIn0ot6w)
 
-follow the yellow arrow and collect the token to score
+Follow the yellow arrow and collect the token to score a point
 
-arrow keys to move
-
-spacebar to fire
-
-shift for shield
+###Controls
+| Key |Movement |
+| ------: | :------|
+| up | forwards thrust  |
+|down |backwards thrust | 
+|left						  | left |
+|right					  | right |
+| spacebar |fire						  |
+| shift |shield					  |
