@@ -1,4 +1,5 @@
 use actor::ActorView;
+use messages::PlayerInstructions;
 use std::rand;
 use std::rand::Rng;
 use std::num::FloatMath;
@@ -12,7 +13,7 @@ enum Activity {
 
 pub fn set_instructions(actor: ActorView, 
                         nearbys: Vec<ActorView>,
-                        player_messages:&mut Vec<(i32, &str)>){
+                        player_messages:&mut Vec<(i32, PlayerInstructions)>){
 
 
     // figure out priority
@@ -38,33 +39,33 @@ pub fn set_instructions(actor: ActorView,
     }
 }
 
-fn random_behaviour(id: i32, player_messages: &mut Vec<(i32, &str)>){
+fn random_behaviour(id: i32, player_messages: &mut Vec<(i32, PlayerInstructions)>){
     let rand = rand::task_rng().gen_range(0u32, 100);
     match rand {
         0...50  => {
-            player_messages.push((id, "stop_rotate_right"));
-            player_messages.push((id, "stop_rotate_left"));
-            player_messages.push((id, "begin_increase_throttle"));
+            player_messages.push((id, PlayerInstructions::StopRotateRight));
+            player_messages.push((id, PlayerInstructions::StopRotateLeft));
+            player_messages.push((id, PlayerInstructions::BeginIncreaseThrottle));
         },
         51...70 => {
-            player_messages.push((id, "begin_rotate_left"));
-            player_messages.push((id, "stop_rotate_right"));
-            player_messages.push((id, "stop_increase_throttle"));
+            player_messages.push((id, PlayerInstructions::BeginRotateLeft));
+            player_messages.push((id, PlayerInstructions::StopRotateRight));
+            player_messages.push((id, PlayerInstructions::StopIncreaseThrottle));
         },
         71...90 => {
-            player_messages.push((id, "begin_rotate_right"));
-            player_messages.push((id, "stop_rotate_left"));
-            player_messages.push((id, "stop_increase_throttle"));
+            player_messages.push((id, PlayerInstructions::BeginRotateRight));
+            player_messages.push((id, PlayerInstructions::StopRotateLeft));
+            player_messages.push((id, PlayerInstructions::StopIncreaseThrottle));
         }
         _      => {
-            player_messages.push((id, "stop_rotate_right"));
-            player_messages.push((id, "stop_rotate_left"));
-            player_messages.push((id, "stop_increase_throttle"));
+            player_messages.push((id, PlayerInstructions::StopRotateRight));
+            player_messages.push((id, PlayerInstructions::StopRotateLeft));
+            player_messages.push((id, PlayerInstructions::StopIncreaseThrottle));
         }
     }
 }
 
-fn attack_player(player: ActorView, enemy: ActorView, player_messages: &mut Vec<(i32, &str)>){
+fn attack_player(player: ActorView, enemy: ActorView, player_messages: &mut Vec<(i32, PlayerInstructions)>){
 
     let dx = enemy.x - player.x;
     let dy = enemy.y - player.y;
@@ -91,16 +92,16 @@ fn attack_player(player: ActorView, enemy: ActorView, player_messages: &mut Vec<
     let d_rotation = ideal_rotation - player_rotation;
 
     if d_rotation < 20.0 && d_rotation > -20.0 {
-        player_messages.push((player.id, "begin_increase_throttle"));
-        player_messages.push((player.id, "fire"));
-        player_messages.push((player.id, "stop_rotate_left"));
-        player_messages.push((player.id, "stop_rotate_right"));
+        player_messages.push((player.id, PlayerInstructions::BeginIncreaseThrottle));
+        player_messages.push((player.id, PlayerInstructions::Fire));
+        player_messages.push((player.id, PlayerInstructions::StopRotateLeft));
+        player_messages.push((player.id, PlayerInstructions::StopRotateRight));
     } else if d_rotation < 0.0 {
-        player_messages.push((player.id, "begin_rotate_left"));
-        player_messages.push((player.id, "stop_rotate_right"));
+        player_messages.push((player.id, PlayerInstructions::BeginRotateLeft));
+        player_messages.push((player.id, PlayerInstructions::StopRotateRight));
     } else {
-        player_messages.push((player.id, "stop_rotate_left"));
-        player_messages.push((player.id, "begin_rotate_right"));
+        player_messages.push((player.id, PlayerInstructions::StopRotateLeft));
+        player_messages.push((player.id, PlayerInstructions::BeginRotateRight));
     }
 }
 

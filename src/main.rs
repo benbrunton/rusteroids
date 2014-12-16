@@ -24,6 +24,7 @@ mod explosion;
 mod token;
 mod game;
 mod background;
+mod messages;
 
 // Shader sources
 // vertex shader
@@ -232,7 +233,7 @@ fn main() {
             draw_scene(&actors, loc, cam, color, z, cam_pos.clone(), &window, &background);
 
             actors.process_messages(&mut output_messages);
-            game.process_messages(&output_messages);
+            game.process_messages(output_messages);
 
             generate_actors(&mut actors, cam_pos.clone(), game.max_players());
             background.cleanup(cam_pos.clone());
@@ -349,7 +350,7 @@ fn restart(actors: &mut actor_manager::ActorManager, game: &mut game::Game){
 }
 
 
-fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
+fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, messages::PlayerInstructions)>){
 
     let actors = actor_manager.get();
 
@@ -384,8 +385,10 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 // ...
                 
                 match a2.collision_type{
-                    actor::CollisionType::Collide => messages.push((a1.id, "collide")),
-                    actor::CollisionType::Collect => messages.push((a1.id, "collect")),
+                    actor::CollisionType::Collide => messages.push((a1.id,
+                        messages::PlayerInstructions::Collide)),
+                    actor::CollisionType::Collect => messages.push((a1.id,
+                    messages::PlayerInstructions::Collect)),
                     _              => ()
                 }
                 
@@ -395,7 +398,7 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
 }
 
-fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
+fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, messages::PlayerInstructions)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
@@ -416,17 +419,17 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::Key::Escape, glfw::Action::Press) => window.set_should_close(true),
-                (glfw::Key::Up, glfw::Action::Press) => messages.push((1, "begin_increase_throttle")),
-                (glfw::Key::Down, glfw::Action::Press) => messages.push((1, "begin_decrease_throttle")),
-                (glfw::Key::Up, glfw::Action::Release) => messages.push((1, "stop_increase_throttle")),
-                (glfw::Key::Down, glfw::Action::Release) => messages.push((1, "stop_decrease_throttle")),
-                (glfw::Key::Right, glfw::Action::Press) => messages.push((1, "begin_rotate_right")),
-                (glfw::Key::Left, glfw::Action::Press) => messages.push((1, "begin_rotate_left")),
-                (glfw::Key::Right, glfw::Action::Release) => messages.push((1, "stop_rotate_right")),
-                (glfw::Key::Left, glfw::Action::Release) => messages.push((1, "stop_rotate_left")),
-                (glfw::Key::Space, glfw::Action::Release) => messages.push((1, "fire")),
-                (glfw::Key::LeftShift, glfw::Action::Press) => messages.push((1, "shield_up")),
-                (glfw::Key::LeftShift, glfw::Action::Release) => messages.push((1, "shield_down")),
+                (glfw::Key::Up, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginIncreaseThrottle)),
+                (glfw::Key::Down, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginDecreaseThrottle)),
+                (glfw::Key::Up, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopIncreaseThrottle)),
+                (glfw::Key::Down, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopDecreaseThrottle)),
+                (glfw::Key::Right, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginRotateRight)),
+                (glfw::Key::Left, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginRotateLeft)),
+                (glfw::Key::Right, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopRotateRight)),
+                (glfw::Key::Left, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopRotateLeft)),
+                (glfw::Key::Space, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::Fire)),
+                (glfw::Key::LeftShift, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::ShieldUp)),
+                (glfw::Key::LeftShift, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::ShieldDown)),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();

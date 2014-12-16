@@ -3,6 +3,8 @@ use actor::ActorView;
 use std::rand;
 use std::rand::Rng;
 use actor;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 
 static PI : f32 = 3.14159265359;
 
@@ -79,7 +81,7 @@ impl Asteroid{
 
 impl Actor for Asteroid{
     
-    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
+    fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.x += self.vx;
         self.y += self.vy;
         self.rotation += self.r_speed;
@@ -104,14 +106,14 @@ impl Actor for Asteroid{
         }
     }
 
-    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &PlayerInstructions, output_messages:&mut Vec<(GameInstructions, ActorView)>){
         match message {
-            "collide"                       => {
+            &PlayerInstructions::Collide => {
                                             self.is_alive = false;
                                             if self.width > 100.0 {
-                                                output_messages.push(("new_asteroid", self.get_view().clone()));
+                                                output_messages.push((GameInstructions::NewAsteroid, self.get_view().clone()));
                                             }
-                                            output_messages.push(("explode", self.get_view().clone()));
+                                            output_messages.push((GameInstructions::Explode, self.get_view().clone()));
                                         },
             _                           => ()
         };

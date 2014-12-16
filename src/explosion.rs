@@ -1,6 +1,8 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
+use messages::GameInstructions;
+use messages::PlayerInstructions;
 
 static PI : f32 = 3.14159265359;
 
@@ -47,7 +49,7 @@ impl Explosion{
 
 impl Actor for Explosion{
     
-    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
+    fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.age += 1;
 
         if self.age > 15 {
@@ -105,11 +107,7 @@ impl Actor for Explosion{
         }
     }
 
-    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
-        match message {
-            "die"                       => self.is_alive = false,
-            _                           => ()
-        };
+    fn execute(&mut self, _: &PlayerInstructions, _:&mut Vec<(GameInstructions, ActorView)>){
     }
 
     fn kill(&mut self){

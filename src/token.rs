@@ -3,6 +3,8 @@ use actor::ActorView;
 use std::rand;
 use std::rand::Rng;
 use actor;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 
 static PI : f32 = 3.14159265359;
 
@@ -59,7 +61,7 @@ impl Token{
 
 impl Actor for Token{
     
-    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
+    fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.rotation += self.r_speed;
     }
 
@@ -82,9 +84,9 @@ impl Actor for Token{
         }
     }
 
-    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &PlayerInstructions, _:&mut Vec<(GameInstructions, ActorView)>){
         match message {
-            "collide"                       => {
+            &PlayerInstructions::Collide                       => {
                                             //self.is_alive = false;
                                             //output_messages.push(("explode", self.get_view().clone()));
                                         },
