@@ -1,6 +1,8 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 use std::num::FloatMath;
 
 static PI : f32 = 3.14159265359;
@@ -53,7 +55,7 @@ impl Bullet{
 
 impl Actor for Bullet{
     
-    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
+    fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.y += self.acc_y;
         self.x += self.acc_x;
 
@@ -78,9 +80,9 @@ impl Actor for Bullet{
         }
     }
 
-    fn execute(&mut self, message: &str, _:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &PlayerInstructions, _:&mut Vec<(GameInstructions, ActorView)>){
         match message {
-            "collide"                       => self.is_alive = false,
+            &PlayerInstructions::Collide   => self.is_alive = false,
             _                           => ()
         };
     }

@@ -12,6 +12,7 @@ use std::str;
 use std::rand::Rng;
 use std::num::Float;
 use std::num::FloatMath;
+use std::iter::repeat;
 
 mod actor;
 mod actor_manager;
@@ -24,6 +25,7 @@ mod explosion;
 mod token;
 mod game;
 mod background;
+mod messages;
 
 // Shader sources
 // vertex shader
@@ -73,9 +75,9 @@ fn compile_shader(src: &str, ty: GLenum) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len = 0;
             gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf = Vec::from_elem(len as uint - 1, 0u8);     // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as uint -1).collect();  // subtract 1 to skip the trailing null character
             gl::GetShaderInfoLog(shader, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()).expect("ShaderInfoLog not valid utf8"));
+            panic!("{}", str::from_utf8(buf.as_slice()));
         }
         shader
     }
@@ -96,9 +98,9 @@ fn link_program(vs: GLuint, fs: GLuint) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len: GLint = 0;
             gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf = Vec::from_elem(len as uint - 1, 0u8);     // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as uint - 1).collect();     // subtract 1 to skip the trailing null character
             gl::GetProgramInfoLog(program, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()).expect("ProgramInfoLog not valid utf8"));
+            panic!("{}", str::from_utf8(buf.as_slice()));
         }
         program
     }
@@ -232,7 +234,7 @@ fn main() {
             draw_scene(&actors, loc, cam, color, z, cam_pos.clone(), &window, &background);
 
             actors.process_messages(&mut output_messages);
-            game.process_messages(&output_messages);
+            game.process_messages(output_messages);
 
             generate_actors(&mut actors, cam_pos.clone(), game.max_players());
             background.cleanup(cam_pos.clone());
@@ -313,15 +315,15 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32
     let min_distance = 2600 * 2600; // square instead of sqrt on distance
 
     while actors.get().len() < max_actors {
-        let x = std::rand::task_rng().gen_range(min_x, max_x);
-        let y = std::rand::task_rng().gen_range(min_y, max_y);
+        let x = std::rand::thread_rng().gen_range(min_x, max_x);
+        let y = std::rand::thread_rng().gen_range(min_y, max_y);
         
         let x_dis = x - cx as i32;
         let y_dis = y - cy as i32;
         let distance = x_dis * x_dis + y_dis * y_dis;
 
         if distance > min_distance {
-            let rand = std::rand::task_rng().gen_range(0u32, 100);
+            let rand = std::rand::thread_rng().gen_range(0u32, 100);
             match rand {
                 0...75  => actors.new_asteroid(x, y),
                 76...82 => actors.new_spaceship(x, y),
@@ -349,7 +351,7 @@ fn restart(actors: &mut actor_manager::ActorManager, game: &mut game::Game){
 }
 
 
-fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, &str)>){
+fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &mut Vec<(i32, messages::PlayerInstructions)>){
 
     let actors = actor_manager.get();
 
@@ -384,8 +386,10 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 // ...
                 
                 match a2.collision_type{
-                    actor::CollisionType::Collide => messages.push((a1.id, "collide")),
-                    actor::CollisionType::Collect => messages.push((a1.id, "collect")),
+                    actor::CollisionType::Collide => messages.push((a1.id,
+                        messages::PlayerInstructions::Collide)),
+                    actor::CollisionType::Collect => messages.push((a1.id,
+                    messages::PlayerInstructions::Collect)),
                     _              => ()
                 }
                 
@@ -395,7 +399,7 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
 
 }
 
-fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, &str)>) {
+fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, messages::PlayerInstructions)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
@@ -416,17 +420,17 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
             // println!("Time: {}, Key: {}, ScanCode: {}, Action: {}, Modifiers: [{}]", time, key, scancode, action, mods);
             match (key, action) {
                 (glfw::Key::Escape, glfw::Action::Press) => window.set_should_close(true),
-                (glfw::Key::Up, glfw::Action::Press) => messages.push((1, "begin_increase_throttle")),
-                (glfw::Key::Down, glfw::Action::Press) => messages.push((1, "begin_decrease_throttle")),
-                (glfw::Key::Up, glfw::Action::Release) => messages.push((1, "stop_increase_throttle")),
-                (glfw::Key::Down, glfw::Action::Release) => messages.push((1, "stop_decrease_throttle")),
-                (glfw::Key::Right, glfw::Action::Press) => messages.push((1, "begin_rotate_right")),
-                (glfw::Key::Left, glfw::Action::Press) => messages.push((1, "begin_rotate_left")),
-                (glfw::Key::Right, glfw::Action::Release) => messages.push((1, "stop_rotate_right")),
-                (glfw::Key::Left, glfw::Action::Release) => messages.push((1, "stop_rotate_left")),
-                (glfw::Key::Space, glfw::Action::Release) => messages.push((1, "fire")),
-                (glfw::Key::LeftShift, glfw::Action::Press) => messages.push((1, "shield_up")),
-                (glfw::Key::LeftShift, glfw::Action::Release) => messages.push((1, "shield_down")),
+                (glfw::Key::Up, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginIncreaseThrottle)),
+                (glfw::Key::Down, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginDecreaseThrottle)),
+                (glfw::Key::Up, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopIncreaseThrottle)),
+                (glfw::Key::Down, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopDecreaseThrottle)),
+                (glfw::Key::Right, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginRotateRight)),
+                (glfw::Key::Left, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::BeginRotateLeft)),
+                (glfw::Key::Right, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopRotateRight)),
+                (glfw::Key::Left, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::StopRotateLeft)),
+                (glfw::Key::Space, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::Fire)),
+                (glfw::Key::LeftShift, glfw::Action::Press) => messages.push((1, messages::PlayerInstructions::ShieldUp)),
+                (glfw::Key::LeftShift, glfw::Action::Release) => messages.push((1, messages::PlayerInstructions::ShieldDown)),
                 // (glfw::KeyR, glfw::Press) => {
                 //     // Resize should cause the window to "refresh"
                 //     let (window_width, window_height) = window.get_size();

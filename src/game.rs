@@ -1,5 +1,5 @@
 use actor;
-
+use messages::GameInstructions;
 static MAX_PLAYERS: uint = 5;
 
 pub struct Game{
@@ -22,11 +22,10 @@ impl Game{
         self.score = 0;
     }
 
-    pub fn process_messages(&mut self, messages: &Vec<(&str, actor::ActorView)>){
-        for &(msg, ref v) in messages.iter(){
-            //println!("{} : {}", msg, v);
+    pub fn process_messages(&mut self, messages: Vec<(GameInstructions, actor::ActorView)>){
+        for &(ref msg, ref v) in messages.iter(){
             match msg{
-                "collect"  => {
+                &GameInstructions::Collect  => {
                     if v.id == 1 {
                         self.score += 1;
                         if self.highscore < self.score {

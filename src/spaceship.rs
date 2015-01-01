@@ -1,6 +1,8 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 use std::rand;
 use std::rand::Rng;
 use std::num::FloatMath;
@@ -159,8 +161,8 @@ impl Spaceship{
     fn control(&mut self){
         if self.is_accelerating {
             self.accelerate();
-            let r1 = rand::task_rng().gen_range(0.8f32, 1.0);
-            let r2 = rand::task_rng().gen_range(0.0f32, 1.0);
+            let r1 = rand::thread_rng().gen_range(0.8f32, 1.0);
+            let r2 = rand::thread_rng().gen_range(0.0f32, 1.0);
             self.secondary_color = vec!(r1, r1, r2);
         }
 
@@ -234,7 +236,7 @@ impl Spaceship{
 
 impl Actor for Spaceship{
     
-    fn update(&mut self, output_messages: &mut Vec<(&str, ActorView)>){
+    fn update(&mut self, output_messages: &mut Vec<(GameInstructions, ActorView)>){
         
 
         self.y += self.acc_y;
@@ -253,8 +255,8 @@ impl Actor for Spaceship{
         if self.shield {
             if self.shield_timer > 0 {
 
-                let r = rand::task_rng().gen_range(0.5f32, 1.0);
-                let b = rand::task_rng().gen_range(0.2f32, 0.8);
+                let r = rand::thread_rng().gen_range(0.5f32, 1.0);
+                let b = rand::thread_rng().gen_range(0.2f32, 0.8);
                 self.color = vec!(r, 0.85, b);
                 self.shield_timer -= 1;
             } else {
@@ -273,8 +275,8 @@ impl Actor for Spaceship{
         }
 
         if self.is_accelerating {
-            if rand::task_rng().gen_range(0u32, 10) == 9 {
-                output_messages.push(("trail", self.get_view().clone()));
+            if rand::thread_rng().gen_range(0u32, 10) == 9 {
+                output_messages.push((GameInstructions::Trail, self.get_view().clone()));
             }
         }
 
@@ -299,33 +301,32 @@ impl Actor for Spaceship{
         }
     }
 
-    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &PlayerInstructions, output_messages:&mut Vec<(GameInstructions, ActorView)>){
 
         match message {
-            "begin_increase_throttle"   => self.begin_increase_throttle(),
-            "begin_decrease_throttle"   => self.begin_decrease_throttle(),
-            "stop_increase_throttle"    => self.stop_increase_throttle(),
-            "stop_decrease_throttle"    => self.stop_decrease_throttle(),
-            "begin_rotate_right"        => self.begin_rotate_right(),
-            "begin_rotate_left"         => self.begin_rotate_left(),
-            "stop_rotate_right"         => self.stop_rotate_right(),
-            "stop_rotate_left"          => self.stop_rotate_left(),
-            "fire"                      => {
+            &PlayerInstructions::BeginIncreaseThrottle   => self.begin_increase_throttle(),
+            &PlayerInstructions::BeginDecreaseThrottle   => self.begin_decrease_throttle(),
+            &PlayerInstructions::StopIncreaseThrottle    => self.stop_increase_throttle(),
+            &PlayerInstructions::StopDecreaseThrottle    => self.stop_decrease_throttle(),
+            &PlayerInstructions::BeginRotateRight        => self.begin_rotate_right(),
+            &PlayerInstructions::BeginRotateLeft         => self.begin_rotate_left(),
+            &PlayerInstructions::StopRotateRight         => self.stop_rotate_right(),
+            &PlayerInstructions::StopRotateLeft          => self.stop_rotate_left(),
+            &PlayerInstructions::Fire                      => {
                                             if self.fire_countdown == 0 && !self.shield {
-                                                output_messages.push(("fire", self.get_view().clone()));
+                                                output_messages.push((GameInstructions::Fire, self.get_view().clone()));
                                                 self.fire_countdown = 20;
                                             }
                                         },
-            "collide"                   => {
+            &PlayerInstructions::Collide                   => {
                                             if !self.shield {
                                                 self.is_alive = false;
-                                                output_messages.push(("explode", self.get_view().clone()));
+                                                output_messages.push((GameInstructions::Explode, self.get_view().clone()));
                                             }
                                         },
-            "collect"                   => output_messages.push(("collect", self.get_view().clone())),
-            "shield_up"                 => self.shield_up(),
-            "shield_down"               => self.shield_down(),
-            _                           => ()
+            &PlayerInstructions::Collect                   => output_messages.push((GameInstructions::Collect, self.get_view().clone())),
+            &PlayerInstructions::ShieldUp                 => self.shield_up(),
+            &PlayerInstructions::ShieldDown               => self.shield_down()
         };
     }
 

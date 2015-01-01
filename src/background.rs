@@ -56,8 +56,8 @@ impl Background{
         let max_y = cy as i32 + 8000;
 
         while self.stars.len() < self.num {
-            let x = rand::task_rng().gen_range(min_x, max_x) as f32;
-            let y = rand::task_rng().gen_range(min_y, max_y) as f32;
+            let x = rand::thread_rng().gen_range(min_x, max_x) as f32;
+            let y = rand::thread_rng().gen_range(min_y, max_y) as f32;
 
             self.stars.push((x, y));
         }
@@ -71,8 +71,8 @@ impl Background{
         let min_distance = 5500 * 5500; // square instead of sqrt on distance
 
         while self.stars.len() < self.num {
-            let x = rand::task_rng().gen_range(min_x, max_x) as f32;
-            let y = rand::task_rng().gen_range(min_y, max_y) as f32;
+            let x = rand::thread_rng().gen_range(min_x, max_x) as f32;
+            let y = rand::thread_rng().gen_range(min_y, max_y) as f32;
             
             let x_dis = (x - cx) as i32;
             let y_dis = (y - cy) as i32;

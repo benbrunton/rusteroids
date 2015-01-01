@@ -1,5 +1,7 @@
 use std::fmt::Show;
 use std::cmp::PartialEq;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 
 #[deriving(Clone, Show, PartialEq)]
 pub enum CollisionType{
@@ -28,9 +30,9 @@ pub struct ActorView{
 
 
 pub trait Actor : Show + PartialEq + Clone {
-    fn update(&mut self, output_messages: &mut Vec<(&str, ActorView)>);
+    fn update(&mut self, output_messages: &mut Vec<(GameInstructions, ActorView)>);
     fn get_view(&self) -> ActorView;
-    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>);
+    fn execute(&mut self, message: &PlayerInstructions, output_messages:&mut Vec<(GameInstructions, ActorView)>);
     fn kill(&mut self);
     fn get_id(&self)->i32;
     fn is_alive(&self)->bool;

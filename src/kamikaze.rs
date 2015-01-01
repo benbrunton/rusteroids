@@ -3,6 +3,9 @@ use actor::ActorView;
 use actor;
 use std::num::FloatMath;
 
+use messages::PlayerInstructions;
+use messages::GameInstructions;
+
 static PI : f32 = 3.14159265359;
 
 #[deriving(Show, Clone, PartialEq)]
@@ -60,7 +63,7 @@ impl Kamikaze{
 
 impl Actor for Kamikaze{
     
-    fn update(&mut self, _:&mut Vec<(&str, ActorView)>){
+    fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.accelerate();
         self.y += self.acc_y;
         self.x += self.acc_x;
@@ -85,11 +88,11 @@ impl Actor for Kamikaze{
         }
     }
 
-    fn execute(&mut self, message: &str, output_messages:&mut Vec<(&str, ActorView)>){
+    fn execute(&mut self, message: &PlayerInstructions, output_messages:&mut Vec<(GameInstructions, ActorView)>){
         match message {
-            "collide"                       => {
+            &PlayerInstructions::Collide => {
                                             self.is_alive = false;
-                                            output_messages.push(("explode", self.get_view().clone()));
+                                            output_messages.push((GameInstructions::Explode, self.get_view().clone()));
                                         },
             _                           => ()
         };

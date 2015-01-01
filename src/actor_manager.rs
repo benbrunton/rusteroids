@@ -6,6 +6,8 @@ use kamikaze;
 use explosion;
 use token;
 use spaceship_agent;
+use messages::PlayerInstructions;
+use messages::GameInstructions;
 use std::rand;
 use std::rand::Rng;
 use std::num::Float;
@@ -53,8 +55,8 @@ impl ActorManager {
         ActorManager::get_views(&self.tokens.clone())
     }
 
-    pub fn update(&mut self, messages:Vec<(i32, &str)>, output_messages:&mut Vec<(&str, actor::ActorView)>){
-        let mut player_messages = messages.clone();
+    pub fn update(&mut self, messages:Vec<(i32, PlayerInstructions)>, output_messages:&mut Vec<(GameInstructions, actor::ActorView)>){
+        let mut player_messages = messages;//messages.clone();
 
         for ref actor in self.get().iter(){
             if actor.id == 1 {
@@ -74,29 +76,28 @@ impl ActorManager {
             spaceship_agent::set_instructions(ship.clone(), nearest, &mut player_messages);
         }
 
-        self.spaceships = ActorManager::update_actor_list(self.px, self.py, &mut self.spaceships, player_messages.clone(), output_messages);
-        self.bullets    = ActorManager::update_actor_list(self.px, self.py, &mut self.bullets, player_messages.clone(), output_messages);
-        self.asteroids  = ActorManager::update_actor_list(self.px, self.py, &mut self.asteroids, player_messages.clone(), output_messages);
-        self.kamikaze  = ActorManager::update_actor_list(self.px, self.py, &mut self.kamikaze, player_messages.clone(), output_messages);
-        self.explosions  = ActorManager::update_actor_list(self.px, self.py, &mut self.explosions, player_messages.clone(), output_messages);
-        self.tokens  = ActorManager::update_actor_list(self.px, self.py, &mut self.tokens, player_messages.clone(), output_messages);
+        self.spaceships = ActorManager::update_actor_list(self.px, self.py, &mut self.spaceships, &player_messages, output_messages);
+        self.bullets    = ActorManager::update_actor_list(self.px, self.py, &mut self.bullets, &player_messages, output_messages);
+        self.asteroids  = ActorManager::update_actor_list(self.px, self.py, &mut self.asteroids, &player_messages, output_messages);
+        self.kamikaze  = ActorManager::update_actor_list(self.px, self.py, &mut self.kamikaze, &player_messages, output_messages);
+        self.explosions  = ActorManager::update_actor_list(self.px, self.py, &mut self.explosions, &player_messages, output_messages);
+        self.tokens  = ActorManager::update_actor_list(self.px, self.py, &mut self.tokens, &player_messages, output_messages);
     }
 
-    pub fn process_messages(&mut self, output_messages: &Vec<(&str, actor::ActorView)>){
+    pub fn process_messages(&mut self, output_messages: &Vec<(GameInstructions, actor::ActorView)>){
 
-        for &(msg, ref v) in output_messages.iter(){
+        for &(ref msg, ref v) in output_messages.iter(){
             //println!("{} : {}", msg, v);
             match msg{
-                "fire"  => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
-                "explode" => self.add_explosion(v.x as i32, v.y as i32, (v.width + v.height) as i32 / 2, v.rotation),
-                "trail"   => self.add_explosion(v.x as i32 - v.height as i32 * 2 * v.rotation.sin() as i32, v.y as i32 - v.height as i32 * 2 * v.rotation.cos() as i32, 10, v.rotation),
-                "new_asteroid" => self.split_asteroid(v),
-                "collect" => {
+                &GameInstructions::Fire          => self.add_bullet(v.id, v.x as i32, v.y as i32, v.rotation * 180.0 / 3.14159265359),
+                &GameInstructions::Explode       => self.add_explosion(v.x as i32, v.y as i32, (v.width + v.height) as i32 / 2, v.rotation),
+                &GameInstructions::Trail         => self.add_explosion(v.x as i32 - v.height as i32 * 2 * v.rotation.sin() as i32, v.y as i32 - v.height as i32 * 2 * v.rotation.cos() as i32, 10, v.rotation),
+                &GameInstructions::NewAsteroid  => self.split_asteroid(v),
+                &GameInstructions::Collect       => {
                     if v.id == 1{
                         self.new_token();
                     }
-                },
-                _       => ()
+                }
             }
         }
 
@@ -111,8 +112,8 @@ impl ActorManager {
     pub fn new_token(&mut self){
         self.count += 1;
         let id = self.count;
-        let x = rand::task_rng().gen_range(-10000i32, 10000);
-        let y = rand::task_rng().gen_range(-10000i32, 10000);
+        let x = rand::thread_rng().gen_range(-10000i32, 10000);
+        let y = rand::thread_rng().gen_range(-10000i32, 10000);
         self.tokens = vec!(token::Token::new(id, x, y));
     }
 
@@ -129,7 +130,7 @@ impl ActorManager {
     pub fn new_spaceship(&mut self, x: i32, y:i32){
         self.count += 1;
         let id = self.count;
-        let r = rand::task_rng().gen_range(0.0f32, 360.0);
+        let r = rand::thread_rng().gen_range(0.0f32, 360.0);
         let ship = spaceship::Spaceship::new(id, x, y, r);
         self.spaceships.push(ship);
     }
@@ -192,8 +193,8 @@ impl ActorManager {
     }
 
     fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>, 
-                                messages:Vec<(i32, &str)>, 
-                                output_messages:&mut Vec<(&str, actor::ActorView)>) -> Vec<T>{
+                                messages:&Vec<(i32, PlayerInstructions)>, 
+                                output_messages:&mut Vec<(GameInstructions, actor::ActorView)>) -> Vec<T>{
         
         let threshold = 4000.0 * 4000.0;
         let mut ac:Vec<T> = vec!();
@@ -210,7 +211,7 @@ impl ActorManager {
                 }
             }
 
-            for &(id, message) in messages.iter(){
+            for &(id, ref message) in messages.iter(){
                 if id == actor.get_id() {
                     actor.execute(message, output_messages);
                 }
