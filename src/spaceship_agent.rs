@@ -40,7 +40,7 @@ pub fn set_instructions(actor: ActorView,
 }
 
 fn random_behaviour(id: i32, player_messages: &mut Vec<(i32, PlayerInstructions)>){
-    let rand = rand::task_rng().gen_range(0u32, 100);
+    let rand = rand::thread_rng().gen_range(0u32, 100);
     match rand {
         0...50  => {
             player_messages.push((id, PlayerInstructions::StopRotateRight));

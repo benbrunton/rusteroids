@@ -24,7 +24,7 @@ pub struct Token{
 impl Token{
     pub fn new(id: i32, x: i32, y: i32) -> Token {
 
-        let r = rand::task_rng().gen_range(-5.0f32, 5.0);
+        let r = rand::thread_rng().gen_range(-5.0f32, 5.0);
 
         let shape = vec!(
             -0.02,  0.05,

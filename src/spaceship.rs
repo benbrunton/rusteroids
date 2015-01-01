@@ -161,8 +161,8 @@ impl Spaceship{
     fn control(&mut self){
         if self.is_accelerating {
             self.accelerate();
-            let r1 = rand::task_rng().gen_range(0.8f32, 1.0);
-            let r2 = rand::task_rng().gen_range(0.0f32, 1.0);
+            let r1 = rand::thread_rng().gen_range(0.8f32, 1.0);
+            let r2 = rand::thread_rng().gen_range(0.0f32, 1.0);
             self.secondary_color = vec!(r1, r1, r2);
         }
 
@@ -255,8 +255,8 @@ impl Actor for Spaceship{
         if self.shield {
             if self.shield_timer > 0 {
 
-                let r = rand::task_rng().gen_range(0.5f32, 1.0);
-                let b = rand::task_rng().gen_range(0.2f32, 0.8);
+                let r = rand::thread_rng().gen_range(0.5f32, 1.0);
+                let b = rand::thread_rng().gen_range(0.2f32, 0.8);
                 self.color = vec!(r, 0.85, b);
                 self.shield_timer -= 1;
             } else {
@@ -275,7 +275,7 @@ impl Actor for Spaceship{
         }
 
         if self.is_accelerating {
-            if rand::task_rng().gen_range(0u32, 10) == 9 {
+            if rand::thread_rng().gen_range(0u32, 10) == 9 {
                 output_messages.push((GameInstructions::Trail, self.get_view().clone()));
             }
         }

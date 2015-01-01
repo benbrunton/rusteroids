@@ -29,14 +29,14 @@ pub struct Asteroid{
 impl Asteroid{
     pub fn new(id: i32, x: i32, y: i32) -> Asteroid{
 
-        let d = rand::task_rng().gen_range(40.0f32, 180.0);
+        let d = rand::thread_rng().gen_range(40.0f32, 180.0);
         Asteroid::new_with_d(id, x, y, d, 0)
     }
     pub fn new_with_d(id: i32, x: i32, y: i32, d: f32, parent: i32) -> Asteroid {
 
-        let r = rand::task_rng().gen_range(-5.0f32, 5.0);
-        let vx = rand::task_rng().gen_range(-30.0f32, 30.0);
-        let vy = rand::task_rng().gen_range(-30.0f32, 30.0);
+        let r = rand::thread_rng().gen_range(-5.0f32, 5.0);
+        let vx = rand::thread_rng().gen_range(-30.0f32, 30.0);
+        let vy = rand::thread_rng().gen_range(-30.0f32, 30.0);
 
         let max = d / 2000.0;
         let min = max / 2.0;

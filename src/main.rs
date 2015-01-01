@@ -12,6 +12,7 @@ use std::str;
 use std::rand::Rng;
 use std::num::Float;
 use std::num::FloatMath;
+use std::iter::repeat;
 
 mod actor;
 mod actor_manager;
@@ -74,9 +75,9 @@ fn compile_shader(src: &str, ty: GLenum) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len = 0;
             gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf = Vec::from_elem(len as uint - 1, 0u8);     // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as uint -1).collect();  // subtract 1 to skip the trailing null character
             gl::GetShaderInfoLog(shader, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()).expect("ShaderInfoLog not valid utf8"));
+            panic!("{}", str::from_utf8(buf.as_slice()));
         }
         shader
     }
@@ -97,9 +98,9 @@ fn link_program(vs: GLuint, fs: GLuint) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len: GLint = 0;
             gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf = Vec::from_elem(len as uint - 1, 0u8);     // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as uint - 1).collect();     // subtract 1 to skip the trailing null character
             gl::GetProgramInfoLog(program, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()).expect("ProgramInfoLog not valid utf8"));
+            panic!("{}", str::from_utf8(buf.as_slice()));
         }
         program
     }
@@ -314,15 +315,15 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32
     let min_distance = 2600 * 2600; // square instead of sqrt on distance
 
     while actors.get().len() < max_actors {
-        let x = std::rand::task_rng().gen_range(min_x, max_x);
-        let y = std::rand::task_rng().gen_range(min_y, max_y);
+        let x = std::rand::thread_rng().gen_range(min_x, max_x);
+        let y = std::rand::thread_rng().gen_range(min_y, max_y);
         
         let x_dis = x - cx as i32;
         let y_dis = y - cy as i32;
         let distance = x_dis * x_dis + y_dis * y_dis;
 
         if distance > min_distance {
-            let rand = std::rand::task_rng().gen_range(0u32, 100);
+            let rand = std::rand::thread_rng().gen_range(0u32, 100);
             match rand {
                 0...75  => actors.new_asteroid(x, y),
                 76...82 => actors.new_spaceship(x, y),

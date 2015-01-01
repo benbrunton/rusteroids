@@ -112,8 +112,8 @@ impl ActorManager {
     pub fn new_token(&mut self){
         self.count += 1;
         let id = self.count;
-        let x = rand::task_rng().gen_range(-10000i32, 10000);
-        let y = rand::task_rng().gen_range(-10000i32, 10000);
+        let x = rand::thread_rng().gen_range(-10000i32, 10000);
+        let y = rand::thread_rng().gen_range(-10000i32, 10000);
         self.tokens = vec!(token::Token::new(id, x, y));
     }
 
@@ -130,7 +130,7 @@ impl ActorManager {
     pub fn new_spaceship(&mut self, x: i32, y:i32){
         self.count += 1;
         let id = self.count;
-        let r = rand::task_rng().gen_range(0.0f32, 360.0);
+        let r = rand::thread_rng().gen_range(0.0f32, 360.0);
         let ship = spaceship::Spaceship::new(id, x, y, r);
         self.spaceships.push(ship);
     }
