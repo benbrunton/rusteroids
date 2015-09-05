@@ -35,17 +35,17 @@ static VS_SRC: &'static str =
     in vec4 shape;\n\
     uniform vec3 position;\n\
     uniform vec2 camera;\n\
-    uniform f64 z;\n\
+    uniform float z;\n\
     void main() {\n\
-        f64 x = shape[0];\n\
-        f64 y = shape[1];\n\
-        f64 x_pos = position[0];\n\
-        f64 y_pos = position[1];\n\
-        f64 angle = position[2];\n\
-        f64 c_x   = camera[0];\n\
-        f64 c_y   = camera[1];\n\
-        f64 xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
-        f64 yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
+        float x = shape[0];\n\
+        float y = shape[1];\n\
+        float x_pos = position[0];\n\
+        float y_pos = position[1];\n\
+        float angle = position[2];\n\
+        float c_x   = camera[0];\n\
+        float c_y   = camera[1];\n\
+        float xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
+        float yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
         gl_Position = vec4(xx, yy, 0.0, z);\n\
     }";
 
@@ -111,9 +111,9 @@ fn main() {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     // Choose a GL profile that is compatible with OS X 10.7+
-    //glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
-    //glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
-    //glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
+    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+    glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
+    glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
 
     let (mut window, events) = glfw.create_window(800, 600, "rusteroids", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
