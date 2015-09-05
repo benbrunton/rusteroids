@@ -1,14 +1,14 @@
 use actor::Actor;
 use actor::ActorView;
 use actor;
-use std::num::FloatMath;
+//use std::num::FloatMath;
 
 use messages::PlayerInstructions;
 use messages::GameInstructions;
 
 static PI : f32 = 3.14159265359;
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Kamikaze{
     id: i32,
     x: f32,
@@ -23,7 +23,7 @@ pub struct Kamikaze{
 }
 
 impl Kamikaze{
-    pub fn new(id: i32, x: i32, y: i32, (target_x, target_y): (f32, f32)) -> Kamikaze { 
+    pub fn new(id: i32, x: i32, y: i32, (target_x, target_y): (f32, f32)) -> Kamikaze {
         let shape = vec!(
             0.0,  0.06,
             0.024, -0.06,
@@ -62,7 +62,7 @@ impl Kamikaze{
 
 
 impl Actor for Kamikaze{
-    
+
     fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.accelerate();
         self.y += self.acc_y;
@@ -73,10 +73,10 @@ impl Actor for Kamikaze{
         ActorView {
             id: self.id,
             parent: 0,
-            x: self.x, 
+            x: self.x,
             y: self.y,
-            width: 50.0, 
-            height: 100.0, 
+            width: 50.0,
+            height: 100.0,
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),

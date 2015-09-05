@@ -1,10 +1,10 @@
 use actor;
 use messages::GameInstructions;
-static MAX_PLAYERS: uint = 5;
+static MAX_PLAYERS: usize = 5;
 
 pub struct Game{
-    pub score: uint,
-    pub highscore: uint
+    pub score: usize,
+    pub highscore: usize
 }
 
 impl Game{
@@ -14,7 +14,7 @@ impl Game{
             highscore: 0
         }
     }
-    pub fn max_players(&self)-> uint{
+    pub fn max_players(&self)-> usize{
         MAX_PLAYERS + (self.score * 3)
     }
 

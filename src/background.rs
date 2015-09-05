@@ -1,5 +1,5 @@
-use std::rand;
-use std::rand::Rng;
+use rand;
+use rand::Rng;
 
 static RADIUS : f32 = 0.008;
 
@@ -11,7 +11,7 @@ pub struct BackgroundElement{
 }
 
 pub struct Background{
-    num : uint,
+    num : usize,
     shape: Vec<f32>,
     stars: Vec<(f32, f32)>,
     color: Vec<f32>
