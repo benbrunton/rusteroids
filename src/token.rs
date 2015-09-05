@@ -1,7 +1,7 @@
 use actor::Actor;
 use actor::ActorView;
-use std::rand;
-use std::rand::Rng;
+use rand;
+use rand::Rng;
 use actor;
 use messages::PlayerInstructions;
 use messages::GameInstructions;
@@ -9,7 +9,7 @@ use messages::GameInstructions;
 static PI : f32 = 3.14159265359;
 
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token{
     id: i32,
     x: f32,
@@ -60,7 +60,7 @@ impl Token{
 
 
 impl Actor for Token{
-    
+
     fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.rotation += self.r_speed;
     }
@@ -69,10 +69,10 @@ impl Actor for Token{
         ActorView {
             id: self.id,
             parent: 0,
-            x: self.x, 
+            x: self.x,
             y: self.y,
-            width: 100.0, 
-            height: 100.0, 
+            width: 100.0,
+            height: 100.0,
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),

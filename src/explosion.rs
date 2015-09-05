@@ -7,7 +7,7 @@ use messages::PlayerInstructions;
 static PI : f32 = 3.14159265359;
 
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Explosion{
     id: i32,
     x: f32,
@@ -48,7 +48,7 @@ impl Explosion{
 
 
 impl Actor for Explosion{
-    
+
     fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.age += 1;
 
@@ -65,7 +65,7 @@ impl Actor for Explosion{
                 0.0,   s
             );
 
-            
+
         }else if self.age > 10 {
             let s = self.size * 2.0;
             self.color = vec!(0.9, 0.9, 0.4);
@@ -92,10 +92,10 @@ impl Actor for Explosion{
         ActorView {
             id: self.id,
             parent: 0,
-            x: self.x, 
+            x: self.x,
             y: self.y,
-            width: 0.0, 
-            height: 0.0, 
+            width: 0.0,
+            height: 0.0,
             rotation: self.rotation * PI / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
