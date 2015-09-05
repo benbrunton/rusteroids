@@ -1,17 +1,18 @@
-#![feature(globs)]
+//#![feature(globs)]
 
 extern crate gl;
 extern crate glfw;
 extern crate time;
+extern crate rand;
 
 use gl::types::*;
 use glfw::Context;
+use rand::Rng;
 use std::mem;
 use std::ptr;
 use std::str;
-use std::rand::Rng;
-use std::num::Float;
-use std::num::FloatMath;
+//use std::num::Float;
+//use std::num::FloatMath;
 use std::iter::repeat;
 
 mod actor;
@@ -34,17 +35,17 @@ static VS_SRC: &'static str =
     in vec4 shape;\n\
     uniform vec3 position;\n\
     uniform vec2 camera;\n\
-    uniform float z;\n\
+    uniform f64 z;\n\
     void main() {\n\
-        float x = shape[0];\n\
-        float y = shape[1];\n\
-        float x_pos = position[0];\n\
-        float y_pos = position[1];\n\
-        float angle = position[2];\n\
-        float c_x   = camera[0];\n\
-        float c_y   = camera[1];\n\
-        float xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
-        float yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
+        f64 x = shape[0];\n\
+        f64 y = shape[1];\n\
+        f64 x_pos = position[0];\n\
+        f64 y_pos = position[1];\n\
+        f64 angle = position[2];\n\
+        f64 c_x   = camera[0];\n\
+        f64 c_y   = camera[1];\n\
+        f64 xx = (x * cos(angle) + y * sin(angle)) + x_pos - c_x;\n\
+        f64 yy = (-x * sin(angle) + y * cos(angle)) + y_pos - c_y;\n\
         gl_Position = vec4(xx, yy, 0.0, z);\n\
     }";
 
@@ -64,7 +65,7 @@ fn compile_shader(src: &str, ty: GLenum) -> GLuint {
         let shader = gl::CreateShader(ty);
 
         // Attempt to compile the shader
-        src.with_c_str(|ptr| gl::ShaderSource(shader, 1, &ptr, ptr::null()));
+        glfw::with_c_str(src, |ptr| gl::ShaderSource(shader, 1, &ptr, ptr::null()));
         gl::CompileShader(shader);
 
         // Get the compile status
@@ -75,9 +76,9 @@ fn compile_shader(src: &str, ty: GLenum) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len = 0;
             gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf:Vec<u8> = repeat(0u8).take(len as uint -1).collect();  // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as usize -1).collect();  // subtract 1 to skip the trailing null character
             gl::GetShaderInfoLog(shader, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()));
+            panic!("{:?}", str::from_utf8(&buf[..]));
         }
         shader
     }
@@ -98,26 +99,26 @@ fn link_program(vs: GLuint, fs: GLuint) -> GLuint {
         if status != (gl::TRUE as GLint) {
             let mut len: GLint = 0;
             gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-            let mut buf:Vec<u8> = repeat(0u8).take(len as uint - 1).collect();     // subtract 1 to skip the trailing null character
+            let mut buf:Vec<u8> = repeat(0u8).take(len as usize - 1).collect();     // subtract 1 to skip the trailing null character
             gl::GetProgramInfoLog(program, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
-            panic!("{}", str::from_utf8(buf.as_slice()));
+            panic!("{:?}", str::from_utf8(&buf[..]));
         }
         program
     }
 }
 
 fn main() {
-    let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     // Choose a GL profile that is compatible with OS X 10.7+
-    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
-    glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
-    glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
+    //glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+    //glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
+    //glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
 
-    let (window, events) = glfw.create_window(800, 600, "rusteroids", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw.create_window(800, 600, "rusteroids", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
-    window.set_all_polling(true);
+    window.set_key_polling(true);
 
     // It is essential to make the context current before calling `gl::load_with`.
     window.make_current();
@@ -157,10 +158,10 @@ fn main() {
 
         // Use shader program
         gl::UseProgram(program);
-        "out_color".with_c_str(|ptr| gl::BindFragDataLocation(program, 0, ptr));
+        glfw::with_c_str("out_color", |ptr| gl::BindFragDataLocation(program, 0, ptr));
 
         // Specify the layout of the vertex data
-        let pos_attr = "shape".with_c_str(|ptr| gl::GetAttribLocation(program, ptr));
+        let pos_attr = glfw::with_c_str("shape",|ptr| gl::GetAttribLocation(program, ptr));
         gl::EnableVertexAttribArray(pos_attr as GLuint);
         gl::VertexAttribPointer(pos_attr as GLuint,     // must match the layout in the shader.
                                 2,                      // size
@@ -169,10 +170,10 @@ fn main() {
                                 0,                      // stride
                                 ptr::null());           // array buffer offset
 
-        loc = "position".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-        cam = "camera".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-        color = "color".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
-        z = "z".with_c_str(|ptr| gl::GetUniformLocation(program, ptr));
+        loc = glfw::with_c_str("position",|ptr| gl::GetUniformLocation(program, ptr));
+        cam = glfw::with_c_str("camera",|ptr| gl::GetUniformLocation(program, ptr));
+        color = glfw::with_c_str("color",|ptr| gl::GetUniformLocation(program, ptr));
+        z = glfw::with_c_str("z",|ptr| gl::GetUniformLocation(program, ptr));
     }
 
     let output_on = false;
@@ -185,13 +186,13 @@ fn main() {
     let mut cam_pos = (0.0, 0.0);
     let mut game = game::Game::new();
 
-    let mut reset_countdown:uint = 3;
+    let mut reset_countdown:usize = 3;
     let mut actors = actor_manager::ActorManager::new();
     actors.restart();
 
     let mut background = background::Background::new();
     background.generate(cam_pos.clone());
-    
+
     while !window.should_close() {
 
         // Poll events
@@ -200,7 +201,7 @@ fn main() {
         let mut messages = vec!();
 
         for event in glfw::flush_messages(&events) {
-            handle_window_event(&window, event, &mut messages);
+            handle_window_event(&mut window, event, &mut messages);
         }
 
         let t2 = time::get_time();
@@ -209,7 +210,7 @@ fn main() {
         //////////////////////////////////////
         //
         //     INNER LOOP
-        //     
+        //
         //////////////////////////////////////
 
 
@@ -231,7 +232,7 @@ fn main() {
 
             cam_pos = get_camera(&actors, cam_pos.clone());
 
-            draw_scene(&actors, loc, cam, color, z, cam_pos.clone(), &window, &background);
+            draw_scene(&actors, loc, cam, color, z, cam_pos.clone(), &mut window, &background);
 
             actors.process_messages(&mut output_messages);
             game.process_messages(output_messages);
@@ -240,7 +241,7 @@ fn main() {
             background.cleanup(cam_pos.clone());
             background.offscreen_generate(cam_pos.clone());
 
-            window.set_title(format!("rusteroids - score [{}] - highscore [{}]", game.score, game.highscore).as_slice());
+            window.set_title(&format!("rusteroids - score [{}] - highscore [{}]", game.score, game.highscore)[..]);
 
             // every second
             let t3 = time::get_time();
@@ -277,8 +278,8 @@ fn main() {
                         reset_countdown = 3;
                     }
                 }
-                
-                
+
+
             }
 
         }
@@ -288,9 +289,9 @@ fn main() {
         //////////////////////////////////////
         //
         // END OF INNER LOOP
-        // 
+        //
         ///////////////////////////////////////
-        
+
 
         //window.set_should_close(true);
 
@@ -306,7 +307,7 @@ fn main() {
     }
 }
 
-fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32), max_actors: uint){
+fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32), max_actors: usize){
 
     let min_x = cx as i32 - 4000;
     let max_x = cx as i32 + 4000;
@@ -315,15 +316,15 @@ fn generate_actors(actors: &mut actor_manager::ActorManager, (cx, cy): (f32, f32
     let min_distance = 2600 * 2600; // square instead of sqrt on distance
 
     while actors.get().len() < max_actors {
-        let x = std::rand::thread_rng().gen_range(min_x, max_x);
-        let y = std::rand::thread_rng().gen_range(min_y, max_y);
-        
+        let x = rand::thread_rng().gen_range(min_x, max_x);
+        let y = rand::thread_rng().gen_range(min_y, max_y);
+
         let x_dis = x - cx as i32;
         let y_dis = y - cy as i32;
         let distance = x_dis * x_dis + y_dis * y_dis;
 
         if distance > min_distance {
-            let rand = std::rand::thread_rng().gen_range(0u32, 100);
+            let rand = rand::thread_rng().gen_range(0u32, 100);
             match rand {
                 0...75  => actors.new_asteroid(x, y),
                 76...82 => actors.new_spaceship(x, y),
@@ -360,12 +361,12 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
         // todo - if we count the top iter(), we can slice this one
         //      - to only match remaining actors
         //      - would then need to push a2.id messages on collision
-        
+
         let actors2 = actor_manager.get();
 
         for a2 in actors2.iter(){
 
-            if     a1.id    == 0 
+            if     a1.id    == 0
                 || a2.id    == 0
                 || a1.id    == a2.id
                 || a1.id    == a2.parent
@@ -375,16 +376,16 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                 continue;
             }
 
-            if (a1.x - a2.x).abs() as uint > 1000 || (a1.y - a2.y).abs() as uint > 1000 {
+            if (a1.x - a2.x).abs() as usize > 1000 || (a1.y - a2.y).abs() as usize > 1000 {
                 continue;
             }
 
-            if a1.x + a1.width > a2.x - a2.width && a1.x - a1.width < a2.x + a2.width 
+            if a1.x + a1.width > a2.x - a2.width && a1.x - a1.width < a2.x + a2.width
               && a1.y + a1.height > a2.y - a2.height && a1.y - a1.height < a2.y + a2.height {
 
                 // within bounding box - pixel perfect that shit
                 // ...
-                
+
                 match a2.collision_type{
                     actor::CollisionType::Collide => messages.push((a1.id,
                         messages::PlayerInstructions::Collide)),
@@ -392,14 +393,14 @@ fn calculate_collisions(actor_manager: &actor_manager::ActorManager, messages: &
                     messages::PlayerInstructions::Collect)),
                     _              => ()
                 }
-                
+
             }
         }
     }
 
 }
 
-fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, messages::PlayerInstructions)>) {
+fn handle_window_event(window: &mut glfw::Window, (_/*time*/, event): (f64, glfw::WindowEvent), messages : &mut Vec<(i32, messages::PlayerInstructions)>) {
     match event {
         // glfw::PosEvent(x, y)                => window.set_title(format!("Time: {}, Window pos: ({}, {})", time, x, y).as_slice()),
         // glfw::SizeEvent(w, h)               => window.set_title(format!("Time: {}, Window size: ({}, {})", time, w, h).as_slice()),
@@ -411,7 +412,7 @@ fn handle_window_event(window: &glfw::Window, (_/*time*/, event): (f64, glfw::Wi
         // glfw::IconifyEvent(false)           => println!("Time: {}, Window was maximised.", time),
         // glfw::FramebufferSizeEvent(w, h)    => println!("Time: {}, Framebuffer size: ({}, {})", time, w, h),
         // glfw::CharEvent(character)          => println!("Time: {}, Character: {}", time, character),
-        // glfw::MouseButtonEvent(btn, action, mods) => println!("Time: {}, Button: {}, Action: {}, Modifiers: [{}]", time, glfw::ShowAliases(btn), action, mods),
+        // glfw::MouseButtonEvent(btn, action, mods) => println!("Time: {}, Button: {}, Action: {}, Modifiers: [{}]", time, glfw::DebugAliases(btn), action, mods),
         // glfw::CursorPosEvent(xpos, ypos)    => window.set_title(format!("Time: {}, Cursor position: ({}, {})", time, xpos, ypos).as_slice()),
         // glfw::CursorEnterEvent(true)        => println!("Time: {}, Cursor entered window.", time),
         // glfw::CursorEnterEvent(false)       => println!("Time: {}, Cursor left window.", time),
@@ -456,13 +457,13 @@ fn get_camera(actor_manager:&actor_manager::ActorManager, (cx, cy):(f32,f32)) ->
     (cx, cy)
 }
 
-fn draw_scene(actor_manager:&actor_manager::ActorManager, 
-        loc:i32, 
-        cam:i32, 
+fn draw_scene(actor_manager:&actor_manager::ActorManager,
+        loc:i32,
+        cam:i32,
         color:i32,
         z: i32,
-        (cx, cy):(f32, f32), 
-        window: &glfw::Window,
+        (cx, cy):(f32, f32),
+        window: &mut glfw::Window,
         background: &background::Background){
 
     let actors = actor_manager.get();
@@ -500,7 +501,7 @@ fn draw_actor(p: &actor::ActorView, loc:i32, cam:i32, color:i32, z:i32, cx: f32,
             (Some(shape), Some(second_color)) => draw(&shape, loc, cam, color, z, p.x, p.y, p.rotation, cx, cy, &second_color, 1.0),
             _                        => ()
         }
-        
+
     }
 }
 
@@ -567,7 +568,7 @@ fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, z:i32, x:f32, y:f32, rotation
                mem::transmute(&v[0]),
                gl::DYNAMIC_DRAW); // STATIC | DYNAMIC | STREAM
 
-        
+
         gl::Uniform3f(loc, x / 2000.0, y / 2000.0, rotation);
         gl::Uniform2f(cam, cx / 2000.0, cy / 2000.0);
         gl::Uniform3f(color, col[0], col[1], col[2]);

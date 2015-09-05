@@ -8,12 +8,12 @@ use token;
 use spaceship_agent;
 use messages::PlayerInstructions;
 use messages::GameInstructions;
-use std::rand;
-use std::rand::Rng;
-use std::num::Float;
-use std::num::FloatMath;
+use rand;
+use rand::Rng;
+//use std::num::Float;
+//use std::num::FloatMath;
 
-#[deriving(Clone, Show, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ActorManager{
     spaceships: Vec<spaceship::Spaceship>,
     bullets: Vec<bullet::Bullet>,
@@ -28,9 +28,9 @@ pub struct ActorManager{
 
 impl ActorManager {
     pub fn new() -> ActorManager {
-        ActorManager { 
-            spaceships : vec!(), 
-            bullets: vec!(), 
+        ActorManager {
+            spaceships : vec!(),
+            bullets: vec!(),
             asteroids: vec!(),
             kamikaze: vec!(),
             explosions: vec!(),
@@ -39,15 +39,15 @@ impl ActorManager {
             px: 0.0,
             py: 0.0
         }
-    }    
+    }
 
     pub fn get(&self) -> Vec<actor::ActorView> {
         let mut all_views = ActorManager::get_views(&self.spaceships.clone());
-        all_views.push_all(ActorManager::get_views(&self.bullets.clone()).slice_from(0));
-        all_views.push_all(ActorManager::get_views(&self.asteroids.clone()).slice_from(0));
-        all_views.push_all(ActorManager::get_views(&self.kamikaze.clone()).slice_from(0));
-        all_views.push_all(ActorManager::get_views(&self.explosions.clone()).slice_from(0));
-        all_views.push_all(ActorManager::get_views(&self.tokens.clone()).slice_from(0));
+        all_views.extend(ActorManager::get_views(&self.bullets.clone()));
+        all_views.extend(ActorManager::get_views(&self.asteroids.clone()));
+        all_views.extend(ActorManager::get_views(&self.kamikaze.clone()));
+        all_views.extend(ActorManager::get_views(&self.explosions.clone()));
+        all_views.extend(ActorManager::get_views(&self.tokens.clone()));
         all_views
     }
 
@@ -66,7 +66,7 @@ impl ActorManager {
             }
         }
 
-        
+
         for ship in ActorManager::get_views(&self.spaceships.clone()).iter(){
             if ship.id == 1 {
                 // forget about the player
@@ -192,10 +192,10 @@ impl ActorManager {
         nearest
     }
 
-    fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>, 
-                                messages:&Vec<(i32, PlayerInstructions)>, 
+    fn update_actor_list<T: actor::Actor>(px:f32, py:f32, list:&mut Vec<T>,
+                                messages:&Vec<(i32, PlayerInstructions)>,
                                 output_messages:&mut Vec<(GameInstructions, actor::ActorView)>) -> Vec<T>{
-        
+
         let threshold = 4000.0 * 4000.0;
         let mut ac:Vec<T> = vec!();
 
@@ -203,8 +203,8 @@ impl ActorManager {
             let a_pos = actor.get_view();
             if actor.get_id() != 1 && a_pos.collision_type != actor::CollisionType::Collect{
                 let x_distance = a_pos.x - px;
-                let y_distance = a_pos.y - py; 
-                let distance = x_distance * x_distance + y_distance * y_distance; 
+                let y_distance = a_pos.y - py;
+                let distance = x_distance * x_distance + y_distance * y_distance;
                 if distance > threshold{
                     actor.kill();
                     continue;

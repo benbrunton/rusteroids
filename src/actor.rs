@@ -1,16 +1,16 @@
-use std::fmt::Show;
+use std::fmt::Debug;
 use std::cmp::PartialEq;
 use messages::PlayerInstructions;
 use messages::GameInstructions;
 
-#[deriving(Clone, Show, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CollisionType{
     Collide,
     Collect,
     Ignore
 }
 
-#[deriving(Clone, Show, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ActorView{
     pub id: i32,
     pub parent: i32,
@@ -29,7 +29,7 @@ pub struct ActorView{
 }
 
 
-pub trait Actor : Show + PartialEq + Clone {
+pub trait Actor : Debug + PartialEq + Clone {
     fn update(&mut self, output_messages: &mut Vec<(GameInstructions, ActorView)>);
     fn get_view(&self) -> ActorView;
     fn execute(&mut self, message: &PlayerInstructions, output_messages:&mut Vec<(GameInstructions, ActorView)>);

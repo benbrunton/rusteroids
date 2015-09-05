@@ -3,11 +3,10 @@ use actor::ActorView;
 use actor;
 use messages::PlayerInstructions;
 use messages::GameInstructions;
-use std::num::FloatMath;
 
 static PI : f32 = 3.14159265359;
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Bullet{
     id: i32,
     x: f32,
@@ -23,7 +22,7 @@ pub struct Bullet{
 
 
 impl Bullet{
-    pub fn new(id: i32, parent: i32, x: i32, y: i32, rotation: f32) -> Bullet { 
+    pub fn new(id: i32, parent: i32, x: i32, y: i32, rotation: f32) -> Bullet {
         let shape = vec!(
             0.0,  0.005,
             0.005, -0.005,
@@ -54,7 +53,7 @@ impl Bullet{
 
 
 impl Actor for Bullet{
-    
+
     fn update(&mut self, _:&mut Vec<(GameInstructions, ActorView)>){
         self.y += self.acc_y;
         self.x += self.acc_x;
@@ -65,10 +64,10 @@ impl Actor for Bullet{
         ActorView {
             id: self.id,
             parent: self.parent,
-            x: self.x, 
+            x: self.x,
             y: self.y,
-            width: 10.0, 
-            height: 10.0, 
+            width: 10.0,
+            height: 10.0,
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),

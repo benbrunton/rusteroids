@@ -1,8 +1,7 @@
 use actor::ActorView;
 use messages::PlayerInstructions;
-use std::rand;
-use std::rand::Rng;
-use std::num::FloatMath;
+use rand;
+use rand::Rng;
 
 static PI : f32 = 3.14159265359;
 
@@ -11,7 +10,7 @@ enum Activity {
     Nothing
 }
 
-pub fn set_instructions(actor: ActorView, 
+pub fn set_instructions(actor: ActorView,
                         nearbys: Vec<ActorView>,
                         player_messages:&mut Vec<(i32, PlayerInstructions)>){
 
@@ -23,7 +22,7 @@ pub fn set_instructions(actor: ActorView,
     // 3. fire
 
     let mut priority = Activity::Nothing;
-    
+
     for enemy in nearbys.into_iter() {
         if enemy.id == 1 {
             priority = Activity::Player(enemy);
@@ -71,7 +70,7 @@ fn attack_player(player: ActorView, enemy: ActorView, player_messages: &mut Vec<
     let dy = enemy.y - player.y;
     let mut ideal_rotation = dx.atan2(dy) * 180.0 / PI;
     let mut player_rotation = player.rotation * 180.0 / PI;
-    
+
 
     while ideal_rotation > 360.0 {
         ideal_rotation -= 360.0;

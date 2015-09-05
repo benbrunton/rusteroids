@@ -3,15 +3,14 @@ use actor::ActorView;
 use actor;
 use messages::PlayerInstructions;
 use messages::GameInstructions;
-use std::rand;
-use std::rand::Rng;
-use std::num::FloatMath;
+use rand;
+use rand::Rng;
 
 static PI : f32 = 3.14159265359;
-static SHIELD_TIME: uint = 180;
+static SHIELD_TIME: usize = 180;
 static SHOW_TRAILS: bool = false;
 
-#[deriving(Show, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Spaceship{
     id: i32,
     x: f32,
@@ -31,17 +30,17 @@ pub struct Spaceship{
     normal_color : Vec<f32>,
     normal_shape : Vec<f32>,
     fire_countdown: i32,
-    shield_timer: uint,
-    shield_max_time: uint,
+    shield_timer: usize,
+    shield_max_time: usize,
     secondary_shape: Vec<f32>,
     secondary_shape_1: Vec<f32>,
     secondary_shape_2: Vec<f32>,
     secondary_color: Vec<f32>,
-    thrust_timer: uint
+    thrust_timer: usize
 }
 
 impl Spaceship{
-    pub fn new(id: i32, x: i32, y: i32, rotation: f32) -> Spaceship { 
+    pub fn new(id: i32, x: i32, y: i32, rotation: f32) -> Spaceship {
         let shape = vec!(
             0.0, 0.05,
             0.025, -0.05,
@@ -235,9 +234,9 @@ impl Spaceship{
 
 
 impl Actor for Spaceship{
-    
+
     fn update(&mut self, output_messages: &mut Vec<(GameInstructions, ActorView)>){
-        
+
 
         self.y += self.acc_y;
         self.x += self.acc_x;
@@ -286,10 +285,10 @@ impl Actor for Spaceship{
         ActorView {
             id: self.id,
             parent: 0,
-            x: self.x, 
+            x: self.x,
             y: self.y,
-            width: 50.0, 
-            height: 100.0, 
+            width: 50.0,
+            height: 100.0,
             rotation: (self.rotation * PI) / 180.0,
             shape: self.shape.clone(),
             color: self.color.clone(),
