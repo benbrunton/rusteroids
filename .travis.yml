@@ -1,4 +1,4 @@
 language: rust
 before_install:
   - sudo apt-get install libXxf86vm-dev
-  - sudo apt-get install cmake
+  - sudo apt-get install cmake=2.8.12.2
