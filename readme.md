@@ -1,10 +1,7 @@
 # Rusteroids
 #### an asteroids clone built in Rust
 
-branch | status
-----|----
-develop | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=develop)](https://travis-ci.org/benbrunton/rusteroids)
-**master** | [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
+ [![Build Status](https://travis-ci.org/benbrunton/rusteroids.svg?branch=master)](https://travis-ci.org/benbrunton/rusteroids)
 
 
 ### Dependencies:
@@ -23,7 +20,7 @@ Use cargo to build and run the game:
 
 Follow the yellow arrow and collect the token to score a point
 
-###Controls
+### Controls
 | Key |Movement |
 | ------: | :------|
 | up | forwards thrust  |

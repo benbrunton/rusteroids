@@ -1,5 +1,3 @@
-//#![feature(globs)]
-
 extern crate gl;
 extern crate glfw;
 extern crate time;
@@ -11,8 +9,6 @@ use rand::Rng;
 use std::mem;
 use std::ptr;
 use std::str;
-//use std::num::Float;
-//use std::num::FloatMath;
 use std::iter::repeat;
 
 mod actor;
@@ -134,10 +130,10 @@ fn main() {
 
     let mut vao = 0;
     let mut vbo = 0;
-    let mut loc;
-    let mut cam;
-    let mut color;
-    let mut z;
+    let loc;
+    let cam;
+    let color;
+    let z;
 
     unsafe {
         // Create Vertex Array Object
@@ -146,15 +142,7 @@ fn main() {
 
         // Create a Vertex Buffer Object and copy the vertex data to it
         gl::GenBuffers(1, &mut vbo);
-
-        // Generate a buffer for the indices
- // GLuint elementbuffer;
- // glGenBuffers(1, &elementbuffer);
- // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-
-
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        // gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, vbo);
 
         // Use shader program
         gl::UseProgram(program);
@@ -577,8 +565,4 @@ fn draw(v: &Vec<f32>, loc:i32, cam:i32, color:i32, z:i32, x:f32, y:f32, rotation
         // LINE_LOOP / TRIANGLES
         gl::DrawArrays(gl::TRIANGLES, 0, v.len() as i32 / 2);
     }
-    // unsafe {
-    //     gl::DrawElements(gl::TRIANGLES, v.len() as GLsizei,
-    //                                gl::UNSIGNED_INT, ptr::null());
-    // }
 }
